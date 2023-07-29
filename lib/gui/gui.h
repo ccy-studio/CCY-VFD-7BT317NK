@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:11:16
- * @LastEditTime: 2023-07-29 12:20:00
+ * @LastEditTime: 2023-07-29 19:22:06
  */
 #ifndef __VFD_GUI_
 #define __VFD_GUI_
@@ -13,8 +13,15 @@
 #define u16 uint16_t
 #define u32 uint32_t
 
+#define ICON_REC 0x00000200
+#define ICON_CLOCK 0x00000400
+#define ICON_3D 0x00000800
+#define ICON_WIFI 0x00001000
+#define ICON_LEFT_ALL 0xFFE1FE
+#define ICON_NONE 0  // 清空所有ICON显示
+
 // 字库数量
-#define VFD_GUI_FONT_LEN 16
+#define VFD_GUI_FONT_LEN 41
 
 // 灯丝PWM引脚
 #define PWM_PIN 13
@@ -29,26 +36,45 @@ typedef struct {
  * 初始化
  */
 void vfd_gui_init();
+
 /**
  * 清空VFD屏幕显示,循环刷新如果使用vfd_gui_set_text方法不需要使用它。
  */
 void vfd_gui_clear();
+
 /**
  * 在指定位置显示一个char字符,index从1~6
  */
 void vfd_gui_set_one_text(size_t index, char oneChar);
+
 /**
  * 显示一串文字，从0位开始。
  * 不足8位补零(清空显示，方便每次不用调用clear防止闪屏出现)
  */
 void vfd_gui_set_text(const char* string);
+
 /**
- * 屏幕中间冒号的显示开关，1显示，0熄灭
+ * 要点亮的ICON图标，宏定义传参
  */
-void vfd_gui_set_colon(u8 display_state);
+void vfd_gui_set_icon(u32 buf);
 /**
  * 背光开关
  */
 void vfd_gui_set_bck(u8 onOff);
+
+/**
+ * 设置亮度等级 1~7
+ */
+void vfd_gui_set_blk_level(size_t level);
+
+/**
+ * 第一位冒号，参数bool类型
+ */
+void vfd_gui_set_maohao1(u8 open);
+
+/**
+ * 第二位冒号，参数bool类型
+ */
+void vfd_gui_set_maohao2(u8 open);
 
 #endif

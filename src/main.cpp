@@ -2,12 +2,16 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-07-29 12:04:18
+ * @LastEditTime: 2023-07-29 19:44:17
  */
 // 是否开启AHT20温湿度传感器
 #define I2C_AHT20 0
 
 #include <Arduino.h>
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266WiFi.h>
+#include <WiFiManager.h>
 #include <gui.h>
 #if I2C_AHT20
 #include <Adafruit_AHTX0.h>
@@ -21,13 +25,27 @@ sensors_event_t humidity, temp;
 #define KEY2_I2C_SDA 4
 #define KEY3_I2C_SCL 5
 
+#define NTP1 "ntp1.aliyun.com"
+#define NTP2 "ntp2.aliyun.com"
+#define NTP3 "ntp3.aliyun.com"
+
 void read_i2c_aht20();
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
+void getTimeInfo();
+void configModeCallback(WiFiManager* myWiFiManager);
 
 u32 key_filter_sec = 0;  // 按键防抖
 u32 k1_last_time = 0;    // 按键1的上一次按下触发时间记录
 u8 last_key_pin = 0;     // 记录上一次点击的按键PIN码
+
+WiFiManager wifiManager;
+tm timeinfo;
+String time_str = String();
+u8 wifi_conn = 0;
+u8 mh_state = 0;  // 冒号显示状态
+
+u8 light_level = 1;
 
 void setup() {
     Serial.begin(115200);
@@ -37,19 +55,60 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(KEY1), handle_key_interrupt, CHANGE);
     set_key_listener();
 
-    // 默认点亮LED
-    digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_PIN, HIGH);
     // 初始化VFD
-    delay(3000);
+    delay(500);
     vfd_gui_init();
 
-    vfd_gui_set_text("234ABC");
-    delay(3000);
+    vfd_gui_set_text("START.");
+
+    printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
+    printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
+
+    wifiManager.setAPCallback(configModeCallback);
+    wifiManager.setCountry("CN");
+    wifiManager.setBreakAfterConfig(true);
+    wifiManager.setTimeout(60);
+    // wifiManager.setDebugOutput(false);
+    String ssid = "VFD-" + String(ESP.getChipId());
+    if (!wifiManager.autoConnect(ssid.c_str(), NULL)) {
+        Serial.println("Failed to connect and hit timeout.");
+        while (1) {
+            delay(500);
+            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+            vfd_gui_set_text("ERROR.");
+        }
+    }
+
+    // 配网成功，打印连接信息
+    Serial.println("Connected to WiFi!");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+    wifi_conn = 1;
+    vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK);
+    vfd_gui_set_text("WAIT..");
+    getTimeInfo();
 }
 
 void loop() {
     delay(500);
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    // Set VFD Text
+    getTimeInfo();
+    time_str.clear();
+    if (wifi_conn) {
+        time_str += (timeinfo.tm_hour < 10 ? "0" : "");
+        time_str += timeinfo.tm_hour;
+        time_str += (timeinfo.tm_min < 10 ? "0" : "");
+        time_str += timeinfo.tm_min;
+        time_str += (timeinfo.tm_sec < 10 ? "0" : "");
+        time_str += timeinfo.tm_sec;
+        vfd_gui_set_text(time_str.c_str());
+        vfd_gui_set_maohao1(mh_state);
+        vfd_gui_set_maohao2(mh_state);
+        mh_state = !mh_state;
+    } else {
+        vfd_gui_set_text("UNLINK");
+    }
 }
 
 void read_i2c_aht20() {
@@ -80,7 +139,7 @@ void set_key_listener() {
 
 IRAM_ATTR void handle_key_interrupt() {
     u32 filter_sec = (micros() - key_filter_sec) / 1000;
-    if (filter_sec < 500) {
+    if (filter_sec < 250) {
         return;
     }
     if (!digitalRead(KEY1)) {
@@ -88,11 +147,15 @@ IRAM_ATTR void handle_key_interrupt() {
         k1_last_time = micros();
         last_key_pin = KEY1;
         Serial.println("KEY1");
+        digitalWrite(LED_PIN,!digitalRead(LED_PIN));
     } else if (digitalRead(KEY1)) {
         // 低电平
         u32 sec = (micros() - k1_last_time) / 1000;
         if (k1_last_time != 0 && sec > 2000 && last_key_pin == KEY1) {
             Serial.println("长按操作触发");
+            // 如果长按到松下有2秒,执行重置WIFI的操作
+            wifiManager.erase();
+            ESP.restart();
         } else {
             k1_last_time = 0;
         }
@@ -100,12 +163,44 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY2_I2C_SDA)) {
         k1_last_time = 0;
         last_key_pin = KEY2_I2C_SDA;
-        Serial.println("KEY2");
+        Serial.println("亮度减");
+        light_level--;
+        if (light_level == 0) {
+            light_level = 1;
+        }
+        vfd_gui_set_blk_level(light_level);
     }
     if (!digitalRead(KEY3_I2C_SCL)) {
         k1_last_time = 0;
         last_key_pin = KEY3_I2C_SCL;
-        Serial.println("KEY3");
+        Serial.println("亮度加");
+        light_level++;
+        if (light_level > 7) {
+            light_level = 7;
+        }
+        vfd_gui_set_blk_level(light_level);
     }
     key_filter_sec = micros();
+}
+
+void configModeCallback(WiFiManager* myWiFiManager) {
+    Serial.println("Entered config mode");
+    Serial.println(WiFi.softAPIP());
+    Serial.println(myWiFiManager->getConfigPortalSSID());
+    digitalWrite(LED_PIN, LOW);
+    vfd_gui_clear();
+    vfd_gui_set_text("CONFIG");
+}
+
+void getTimeInfo() {
+    if (!getLocalTime(&timeinfo)) {
+        if (WiFi.isConnected()) {
+            configTime(8 * 3600, 0, NTP1, NTP2, NTP3);
+        } else {
+            wifi_conn = 0;
+            vfd_gui_set_icon(ICON_NONE);
+            vfd_gui_set_maohao1(0);
+            vfd_gui_set_maohao2(0);
+        }
+    }
 }
