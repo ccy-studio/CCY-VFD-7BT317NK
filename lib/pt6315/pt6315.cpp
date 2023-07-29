@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-04 14:33:32
- * @LastEditTime: 2023-07-28 13:59:53
+ * @LastEditTime: 2023-07-29 12:48:49
  */
 #include "pt6315.h"
 
@@ -100,6 +100,7 @@ void ptSetDisplayLight(uint8_t onOff, uint8_t brightnessVal) {
     delay_us(10);
     STB_0;
     delay_us(10);
+    //0x8f
     writeData(command);
     delay_us(10);
     STB_1;

@@ -1,4 +1,5 @@
 
+
 # CCY-VFD-7BT317NK
 >  VFD屏幕7-BT-317NK驱动程序，主控ESP8266，驱动IC PT6315
 
@@ -40,9 +41,10 @@ VFD屏PT6315驱动时序：http://www.saisaiwa.com/archives/pt6315-code-jangj
 2. 在Main方法初始化中Setup方法初始化
 
    ```c
-   	// 初始化VFD
-       delay(3000);
-       vfd_gui_init();
+   // 初始化VFD
+   ptInitGPIO();
+   delay(3000);
+   vfd_gui_init();
    ```
 
 3. 显示您要打印的内容

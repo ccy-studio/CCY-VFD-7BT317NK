@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:11:16
- * @LastEditTime: 2023-07-14 16:12:57
+ * @LastEditTime: 2023-07-29 12:20:00
  */
 #ifndef __VFD_GUI_
 #define __VFD_GUI_
@@ -34,7 +34,7 @@ void vfd_gui_init();
  */
 void vfd_gui_clear();
 /**
- * 在指定位置显示一个char字符,index从0~7 8位
+ * 在指定位置显示一个char字符,index从1~6
  */
 void vfd_gui_set_one_text(size_t index, char oneChar);
 /**

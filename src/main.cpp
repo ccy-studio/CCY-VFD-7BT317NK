@@ -1,5 +1,11 @@
+/*
+ * @Description:
+ * @Author: chenzedeng
+ * @Date: 2023-07-28 21:57:30
+ * @LastEditTime: 2023-07-29 12:04:18
+ */
 // 是否开启AHT20温湿度传感器
-#define I2C_AHT20 1
+#define I2C_AHT20 0
 
 #include <Arduino.h>
 #include <gui.h>
@@ -37,10 +43,14 @@ void setup() {
     delay(3000);
     vfd_gui_init();
 
-    vfd_gui_set_text("1234ABC");
+    vfd_gui_set_text("234ABC");
+    delay(3000);
 }
 
-void loop() {}
+void loop() {
+    delay(500);
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+}
 
 void read_i2c_aht20() {
 #if I2C_AHT20
@@ -77,6 +87,7 @@ IRAM_ATTR void handle_key_interrupt() {
         // typec一侧的按键
         k1_last_time = micros();
         last_key_pin = KEY1;
+        Serial.println("KEY1");
     } else if (digitalRead(KEY1)) {
         // 低电平
         u32 sec = (micros() - k1_last_time) / 1000;
@@ -89,10 +100,12 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY2_I2C_SDA)) {
         k1_last_time = 0;
         last_key_pin = KEY2_I2C_SDA;
+        Serial.println("KEY2");
     }
     if (!digitalRead(KEY3_I2C_SCL)) {
         k1_last_time = 0;
         last_key_pin = KEY3_I2C_SCL;
+        Serial.println("KEY3");
     }
     key_filter_sec = micros();
 }

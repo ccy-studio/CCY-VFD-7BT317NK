@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-07-28 14:01:20
+ * @LastEditTime: 2023-07-29 12:16:10
  */
 #include "gui.h"
 
@@ -11,8 +11,9 @@ extern vfd_gui_fonts fonts[VFD_GUI_FONT_LEN];
 u8 lightOff = 1;    // 背光开关
 u8 lightLevel = 7;  // 亮度级别
 
-
 void vfd_gui_init() {
+    // 初始化GPIO
+    ptInitGPIO();
     pinMode(PWM_PIN, OUTPUT);
     // 设置PWM的频率单位hz
     analogWriteFreq(10000);
@@ -68,14 +69,12 @@ void vfd_gui_set_text(const char* string) {
         }
     }
     setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(0, data, 24);              // command3
+    sendDigAndData(3, data, 24);              // command3
     setDisplayMode(3);                        // command1
     ptSetDisplayLight(lightOff, lightLevel);  // command4
 }
 
-void vfd_gui_set_colon(u8 display_state) {
-    
-}
+void vfd_gui_set_colon(u8 display_state) {}
 
 void vfd_gui_set_bck(u8 onOff) {
     lightOff = onOff;
