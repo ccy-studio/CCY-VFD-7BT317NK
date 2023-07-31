@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-07-29 19:44:17
+ * @LastEditTime: 2023-07-31 21:38:29
  */
 // 是否开启AHT20温湿度传感器
 #define I2C_AHT20 0
@@ -35,9 +35,8 @@ IRAM_ATTR void handle_key_interrupt();
 void getTimeInfo();
 void configModeCallback(WiFiManager* myWiFiManager);
 
-u32 key_filter_sec = 0;  // 按键防抖
-u32 k1_last_time = 0;    // 按键1的上一次按下触发时间记录
-u8 last_key_pin = 0;     // 记录上一次点击的按键PIN码
+u32 key_filter_sec = 0;         // 按键防抖
+volatile u32 k1_last_time = 0;  // 按键1的上一次按下触发时间记录
 
 WiFiManager wifiManager;
 tm timeinfo;
@@ -46,6 +45,10 @@ u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
 u8 light_level = 1;
+
+#define STYLE_DEFAULT 0
+#define STYLE_CUSTOM_1 1
+u8 style_page = STYLE_DEFAULT;  // 页面显示样式
 
 void setup() {
     Serial.begin(115200);
@@ -95,19 +98,24 @@ void loop() {
     // Set VFD Text
     getTimeInfo();
     time_str.clear();
-    if (wifi_conn) {
-        time_str += (timeinfo.tm_hour < 10 ? "0" : "");
-        time_str += timeinfo.tm_hour;
-        time_str += (timeinfo.tm_min < 10 ? "0" : "");
-        time_str += timeinfo.tm_min;
-        time_str += (timeinfo.tm_sec < 10 ? "0" : "");
-        time_str += timeinfo.tm_sec;
-        vfd_gui_set_text(time_str.c_str());
-        vfd_gui_set_maohao1(mh_state);
-        vfd_gui_set_maohao2(mh_state);
-        mh_state = !mh_state;
-    } else {
-        vfd_gui_set_text("UNLINK");
+    if (style_page == STYLE_DEFAULT) {
+        if (wifi_conn) {
+            time_str += (timeinfo.tm_hour < 10 ? "0" : "");
+            time_str += timeinfo.tm_hour;
+            time_str += (timeinfo.tm_min < 10 ? "0" : "");
+            time_str += timeinfo.tm_min;
+            time_str += (timeinfo.tm_sec < 10 ? "0" : "");
+            time_str += timeinfo.tm_sec;
+            vfd_gui_set_text(time_str.c_str());
+            vfd_gui_set_maohao1(mh_state);
+            vfd_gui_set_maohao2(mh_state);
+            mh_state = !mh_state;
+        } else {
+            vfd_gui_set_text("UNLINK");
+        }
+    } else if (style_page == STYLE_CUSTOM_1) {
+        vfd_gui_set_text("CCY-YC");
+        vfd_gui_set_icon(ICON_LEFT_ALL);
     }
 }
 
@@ -139,46 +147,47 @@ void set_key_listener() {
 
 IRAM_ATTR void handle_key_interrupt() {
     u32 filter_sec = (micros() - key_filter_sec) / 1000;
-    if (filter_sec < 250) {
+    if (filter_sec < 500) {
         return;
-    }
-    if (!digitalRead(KEY1)) {
-        // typec一侧的按键
-        k1_last_time = micros();
-        last_key_pin = KEY1;
-        Serial.println("KEY1");
-        digitalWrite(LED_PIN,!digitalRead(LED_PIN));
-    } else if (digitalRead(KEY1)) {
-        // 低电平
-        u32 sec = (micros() - k1_last_time) / 1000;
-        if (k1_last_time != 0 && sec > 2000 && last_key_pin == KEY1) {
-            Serial.println("长按操作触发");
-            // 如果长按到松下有2秒,执行重置WIFI的操作
-            wifiManager.erase();
-            ESP.restart();
-        } else {
-            k1_last_time = 0;
-        }
     }
     if (!digitalRead(KEY2_I2C_SDA)) {
         k1_last_time = 0;
-        last_key_pin = KEY2_I2C_SDA;
         Serial.println("亮度减");
-        light_level--;
-        if (light_level == 0) {
+        light_level -= 2;
+        if (light_level <= 0) {
             light_level = 1;
         }
         vfd_gui_set_blk_level(light_level);
     }
     if (!digitalRead(KEY3_I2C_SCL)) {
         k1_last_time = 0;
-        last_key_pin = KEY3_I2C_SCL;
         Serial.println("亮度加");
-        light_level++;
+        light_level += 2;
         if (light_level > 7) {
             light_level = 7;
         }
         vfd_gui_set_blk_level(light_level);
+    }
+    
+    if (!digitalRead(KEY1)) {
+        // typec一侧的按键
+        Serial.println("KEY1");
+        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+        style_page = !style_page;
+        k1_last_time = micros();
+    } else if (digitalRead(KEY1)) {
+        // 高
+        if (digitalRead(KEY2_I2C_SDA) && digitalRead(KEY3_I2C_SCL)) {
+            u32 sec = (micros() - k1_last_time) / 1000;
+            if (k1_last_time != 0 && sec > 2000) {
+                Serial.println("长按操作触发");
+                // 如果长按到松下有2秒,执行重置WIFI的操作
+                wifiManager.erase();
+                ESP.restart();
+            } else {
+                k1_last_time = 0;
+            }
+        }
     }
     key_filter_sec = micros();
 }

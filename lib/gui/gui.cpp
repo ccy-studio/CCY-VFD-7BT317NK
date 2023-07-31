@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-07-29 19:18:17
+ * @LastEditTime: 2023-07-31 21:21:58
  */
 #include "gui.h"
 
@@ -21,6 +21,9 @@ void vfd_gui_init() {
     // 设置PWM的频率单位hz
     analogWriteFreq(8000);
     analogWrite(PWM_PIN, 128);
+    //VFD Setting
+    setDisplayMode(3);                        // command1
+    ptSetDisplayLight(lightOff, lightLevel);  // command4
     vfd_gui_clear();
 }
 
@@ -28,10 +31,8 @@ void vfd_gui_clear() {
     setModeWirteDisplayMode(0);  // command2
     u8 clearBuf[24];
     memset(clearBuf, 0x00, sizeof(clearBuf));
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(0, clearBuf, 24);          // command3
-    setDisplayMode(3);                        // command1
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    setModeWirteDisplayMode(0);       // command2
+    sendDigAndData(0, clearBuf, 24);  // command3
 }
 
 void vfd_gui_set_one_text(size_t index, char oneChar) {
@@ -45,10 +46,8 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
             break;
         }
     }
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(index * 3, buf, 3);        // command3
-    setDisplayMode(3);                        // command1
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    setModeWirteDisplayMode(0);         // command2
+    sendDigAndData(index * 3, buf, 3);  // command3
 }
 
 void vfd_gui_set_icon(u32 buf) {
@@ -56,10 +55,8 @@ void vfd_gui_set_icon(u32 buf) {
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;
     arr[2] = buf & 0xFF;
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(0, arr, 3);                // command3
-    setDisplayMode(3);                        // command1
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    setModeWirteDisplayMode(0);  // command2
+    sendDigAndData(0, arr, 3);   // command3
 }
 
 void vfd_gui_set_text(const char* string) {
@@ -91,14 +88,13 @@ void vfd_gui_set_text(const char* string) {
     } else {
         mh2 = 0;
     }
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(3, data, 24);              // command3
-    setDisplayMode(3);                        // command1
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    setModeWirteDisplayMode(0);   // command2
+    sendDigAndData(3, data, 24);  // command3
 }
 
 void vfd_gui_set_bck(u8 onOff) {
     lightOff = onOff;
+    ptSetDisplayLight(lightOff, lightLevel);  // command4
 }
 
 /**
@@ -106,13 +102,12 @@ void vfd_gui_set_bck(u8 onOff) {
  */
 void vfd_gui_set_blk_level(size_t level) {
     lightLevel = level;
+    ptSetDisplayLight(lightOff, lightLevel);  // command4
 }
 
 static void vfd_set_maohao(u8 address, u8 buf) {
-    setModeWirteDisplayMode(1);               // command2
-    sendDigAndData(address, &buf, 1);         // command3
-    setDisplayMode(3);                        // command1
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    setModeWirteDisplayMode(1);        // command2
+    sendDigAndData(address, &buf, 1);  // command3
 }
 
 void vfd_gui_set_maohao1(u8 open) {
