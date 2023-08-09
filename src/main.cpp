@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-09 15:55:55
+ * @LastEditTime: 2023-08-09 23:55:00
  */
 
 #include <Arduino.h>
@@ -14,8 +14,8 @@
 
 #define LED_PIN 15
 #define KEY1 2
-#define KEY2_I2C_SDA 4
-#define KEY3_I2C_SCL 5
+#define KEY2 4
+#define KEY3 5
 
 #define NTP1 "ntp1.aliyun.com"
 #define NTP2 "ntp2.aliyun.com"
@@ -35,7 +35,7 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1; //亮度等级
+u8 light_level = 1;  // 亮度等级
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
@@ -91,7 +91,7 @@ void loop() {
     time_str.clear();
     if (style_page == STYLE_DEFAULT) {
         if (wifi_conn) {
-            //拼接时间字符串格式： HH:mm:ss
+            // 拼接时间字符串格式： HH:mm:ss
             time_str += (timeinfo.tm_hour < 10 ? "0" : "");
             time_str += timeinfo.tm_hour;
             time_str += (timeinfo.tm_min < 10 ? "0" : "");
@@ -103,7 +103,7 @@ void loop() {
             vfd_gui_set_maohao2(mh_state);
             mh_state = !mh_state;
         } else {
-            //如果联网失败
+            // 如果联网失败
             vfd_gui_set_text("UNLINK");
         }
     } else if (style_page == STYLE_CUSTOM_1) {
@@ -112,15 +112,12 @@ void loop() {
     }
 }
 
-
 void set_key_listener() {
-    pinMode(KEY2_I2C_SDA, INPUT);
-    pinMode(KEY3_I2C_SCL, INPUT);
+    pinMode(KEY2, INPUT);
+    pinMode(KEY3, INPUT);
     // 注册按键中断函数
-    attachInterrupt(digitalPinToInterrupt(KEY2_I2C_SDA), handle_key_interrupt,
-                    CHANGE);
-    attachInterrupt(digitalPinToInterrupt(KEY3_I2C_SCL), handle_key_interrupt,
-                    CHANGE);
+    attachInterrupt(digitalPinToInterrupt(KEY2), handle_key_interrupt, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(KEY3), handle_key_interrupt, CHANGE);
 }
 
 IRAM_ATTR void handle_key_interrupt() {
@@ -128,34 +125,33 @@ IRAM_ATTR void handle_key_interrupt() {
     if (filter_sec < 500) {
         return;
     }
-    if (!digitalRead(KEY2_I2C_SDA)) {
+    if (!digitalRead(KEY1)) {
         k1_last_time = 0;
-        Serial.println("亮度减");
+        Serial.println("Light-");
         light_level -= 2;
         if (light_level <= 0) {
             light_level = 1;
         }
         vfd_gui_set_blk_level(light_level);
     }
-    if (!digitalRead(KEY3_I2C_SCL)) {
+    if (!digitalRead(KEY2)) {
         k1_last_time = 0;
-        Serial.println("亮度加");
+        Serial.println("Light+");
         light_level += 2;
         if (light_level > 7) {
             light_level = 7;
         }
         vfd_gui_set_blk_level(light_level);
     }
-    
-    if (!digitalRead(KEY1)) {
-        // typec一侧的按键
-        Serial.println("KEY1");
+
+    if (!digitalRead(KEY3)) {
+        Serial.println("FN");
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         style_page = !style_page;
         k1_last_time = micros();
     } else if (digitalRead(KEY1)) {
         // 高
-        if (digitalRead(KEY2_I2C_SDA) && digitalRead(KEY3_I2C_SCL)) {
+        if (digitalRead(KEY1) && digitalRead(KEY1)) {
             u32 sec = (micros() - k1_last_time) / 1000;
             if (k1_last_time != 0 && sec > 2000) {
                 Serial.println("长按操作触发");

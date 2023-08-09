@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-07-31 21:21:58
+ * @LastEditTime: 2023-08-09 23:46:29
  */
 #include "gui.h"
 
@@ -19,8 +19,11 @@ void vfd_gui_init() {
     ptInitGPIO();
     pinMode(PWM_PIN, OUTPUT);
     // 设置PWM的频率单位hz
-    analogWriteFreq(8000);
-    analogWrite(PWM_PIN, 128);
+    // analogWriteFreq(8000); //V1版本
+    // analogWrite(PWM_PIN, 128);
+    
+    analogWriteFreq(20000); //V2版本用的频率
+    analogWrite(PWM_PIN, 25);
     //VFD Setting
     setDisplayMode(3);                        // command1
     ptSetDisplayLight(lightOff, lightLevel);  // command4
