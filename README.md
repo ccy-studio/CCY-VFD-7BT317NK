@@ -18,7 +18,10 @@ VFD屏PT6315驱动时序：http://www.saisaiwa.com/archives/pt6315-code-jangj
 
 交流群： http://www.saisaiwa.com/about
 
+本项目是PlatformIO项目介于有些朋友电脑缺失环境或者网络原因一直卡着无法完成安装的原因，这里提供一个云编译的方法。此方法使用云端Docker容器借助云环境可以实现快速编译出所需要的.bin烧录文件。 
+具体操作教程请看：http://www.saisaiwa.com/archives/1691566266606
 
+doc 文件夹下有所需要的一些资料文件。
 
 ### 1. 计划实现功能
 

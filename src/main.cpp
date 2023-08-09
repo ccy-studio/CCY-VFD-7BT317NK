@@ -2,10 +2,8 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-07-31 21:38:29
+ * @LastEditTime: 2023-08-09 15:55:55
  */
-// 是否开启AHT20温湿度传感器
-#define I2C_AHT20 0
 
 #include <Arduino.h>
 #include <DNSServer.h>
@@ -13,12 +11,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <gui.h>
-#if I2C_AHT20
-#include <Adafruit_AHTX0.h>
-#include <Wire.h>
-Adafruit_AHTX0 aht;
-sensors_event_t humidity, temp;
-#endif
 
 #define LED_PIN 15
 #define KEY1 2
@@ -29,7 +21,6 @@ sensors_event_t humidity, temp;
 #define NTP2 "ntp2.aliyun.com"
 #define NTP3 "ntp3.aliyun.com"
 
-void read_i2c_aht20();
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
 void getTimeInfo();
@@ -44,7 +35,7 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1;
+u8 light_level = 1; //亮度等级
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
@@ -100,6 +91,7 @@ void loop() {
     time_str.clear();
     if (style_page == STYLE_DEFAULT) {
         if (wifi_conn) {
+            //拼接时间字符串格式： HH:mm:ss
             time_str += (timeinfo.tm_hour < 10 ? "0" : "");
             time_str += timeinfo.tm_hour;
             time_str += (timeinfo.tm_min < 10 ? "0" : "");
@@ -111,29 +103,15 @@ void loop() {
             vfd_gui_set_maohao2(mh_state);
             mh_state = !mh_state;
         } else {
+            //如果联网失败
             vfd_gui_set_text("UNLINK");
         }
     } else if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_text("CCY-YC");
+        vfd_gui_set_text("CLOCK.");
         vfd_gui_set_icon(ICON_LEFT_ALL);
     }
 }
 
-void read_i2c_aht20() {
-#if I2C_AHT20
-    detachInterrupt(digitalPinToInterrupt(KEY2_I2C_SDA));
-    detachInterrupt(digitalPinToInterrupt(KEY2_I2C_SDA));
-    pinMode(KEY2_I2C_SDA, OUTPUT);
-    pinMode(KEY3_I2C_SCL, OUTPUT);
-    Wire.begin(KEY2_I2C_SDA, KEY3_I2C_SCL);
-    if (!aht.begin(&Wire, 0L, 0x38)) {
-        Serial.println("Could not find AHT? Check wiring");
-        return;
-    }
-    Serial.println("AHT10 or AHT20 found");
-    aht.getEvent(&humidity, &temp);
-#endif
-}
 
 void set_key_listener() {
     pinMode(KEY2_I2C_SDA, INPUT);
