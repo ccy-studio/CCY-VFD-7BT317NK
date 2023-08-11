@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-09 23:46:29
+ * @LastEditTime: 2023-08-11 17:25:32
  */
 #include "gui.h"
 
@@ -19,12 +19,9 @@ void vfd_gui_init() {
     ptInitGPIO();
     pinMode(PWM_PIN, OUTPUT);
     // 设置PWM的频率单位hz
-    // analogWriteFreq(8000); //V1版本
-    // analogWrite(PWM_PIN, 128);
-    
-    analogWriteFreq(20000); //V2版本用的频率
+    analogWriteFreq(20000);  // V2版本用的频率
     analogWrite(PWM_PIN, 25);
-    //VFD Setting
+    // VFD Setting
     setDisplayMode(3);                        // command1
     ptSetDisplayLight(lightOff, lightLevel);  // command4
     vfd_gui_clear();
@@ -42,7 +39,8 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
     u8 buf[3];
     memset(buf, 0, sizeof(buf));
     for (size_t i = 0; i < VFD_GUI_FONT_LEN; i++) {
-        if (fonts[i].text == oneChar) {
+        if (fonts[i].text == oneChar ||
+            (oneChar >= 97 && fonts[i].text == (oneChar - 32))) {
             buf[0] = fonts[i].font[0];
             buf[1] = fonts[i].font[1];
             buf[2] = fonts[i].font[2];
@@ -73,7 +71,8 @@ void vfd_gui_set_text(const char* string) {
     size_t index = 0;
     for (size_t i = 0; i < str_len; i++) {
         for (size_t j = 0; j < VFD_GUI_FONT_LEN; j++) {
-            if (string[i] == fonts[j].text) {
+            if (string[i] == fonts[j].text ||
+                (string[i] >= 97 && fonts[j].text == (string[i] - 32))) {
                 data[index++] = fonts[j].font[0];
                 data[index++] = fonts[j].font[1];
                 data[index++] = fonts[j].font[2];
@@ -120,4 +119,103 @@ void vfd_gui_set_maohao1(u8 open) {
 void vfd_gui_set_maohao2(u8 open) {
     u8 command = open ? mh2 | 0x10 : mh2;
     vfd_set_maohao(0x0E, command);
+}
+
+/**
+ * 循环滚动展示所有文字,可显示任意长字符内容
+ * @param string 要展示的内容字符串
+ * @param delay_ms 循环展示刷新频率单位 Ms
+ * @param loop_count循环播放的次数
+ **/
+void vfd_gui_set_long_text(const char* string,
+                           u32 delay_ms,
+                           size_t loop_count) {
+    loop_count = loop_count <= 0 ? 1 : loop_count;
+    // 屏幕位数
+    static const size_t display_dig_count = 6;
+    // 长度共计6位 + \0 所以单个数组长度为7位
+    static const size_t arr_sub_len = display_dig_count + 1;
+    // 刷新的页码数
+    size_t pageSize = 1;
+    size_t str_len = strlen(string);
+    size_t arr_len;
+    // 如果大于6满整屏不够显示的
+    if (str_len > display_dig_count) {
+        pageSize += (str_len - display_dig_count);
+        // pageSize += 5;是渐渐消失需要的页码数量 总数6-1
+        pageSize += display_dig_count - 1;
+    } else {
+        // 足够显示或者不满屏幕 str_len - 1;是渐渐消失需要的页码数量
+        pageSize += str_len - 1;
+    }
+    // 正向渐出+动画渐出清屏+反向渐入+反向清屏
+    pageSize += loop_count > 1 ? str_len + display_dig_count - 1 : 0;
+    arr_len = pageSize * arr_sub_len;
+    // 分配内存
+    char* buf = (char*)malloc(arr_len * sizeof(char));
+    char* zreo_point = buf;
+    char* second_point;
+    if (buf == NULL) {
+        printf("分配内存失败");
+        return;
+    }
+    // 初始化数组
+    memset(buf, ' ', arr_len * sizeof(char));
+
+    // 正向渐出初始化数据
+    for (size_t i = 0; i < str_len; i++) {
+        strncpy(buf, string + i, display_dig_count);
+        buf += display_dig_count;
+        *buf = '\0';
+        buf++;
+    }
+
+    // 如果循环次数大于1次就初始化动画效果所需要的数据
+    if (loop_count > 1) {
+        second_point = buf;
+        // 初始化反转数据数组
+        for (size_t i = 0; i < str_len; i++) {
+            if (i != 0) {
+                memcpy(buf, (buf - arr_sub_len + 1),
+                       (arr_sub_len - 1) * sizeof(char));
+            }
+            // 6-1 = 5
+            buf += display_dig_count - 1;
+            *buf = string[i];
+            buf++;
+            *buf = '\0';
+            buf++;
+        }
+        // 完全渐出
+        for (size_t i = 0; i < display_dig_count - 1; i++) {
+            memcpy(buf, (buf - arr_sub_len + 1),
+                   (arr_sub_len - 1) * sizeof(char));
+            buf += display_dig_count - 1;
+            *buf = ' ';
+            buf++;
+            *buf = '\0';
+            buf++;
+        }
+    }
+
+    // 输出
+    // 将buf指针位置重新赋值到初始值
+    buf = zreo_point;
+    // 循环两次或者1次
+    while (buf && *buf != '\0') {
+        vfd_gui_set_text(buf);
+        delay(delay_ms);
+        buf += arr_sub_len;
+    }
+    // loop_count大于2的时候开始根据loop_count的数量-2循环到截止.
+    for (size_t i = 0; i < loop_count - 2; i++) {
+        buf = second_point;
+        while (buf && *buf != '\0') {
+            vfd_gui_set_text(buf);
+            delay(delay_ms);
+            buf += arr_sub_len;
+        }
+    }
+    // 释放内存空间
+    free(zreo_point);
 }

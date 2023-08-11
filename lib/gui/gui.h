@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:11:16
- * @LastEditTime: 2023-07-29 19:22:06
+ * @LastEditTime: 2023-08-11 16:04:29
  */
 #ifndef __VFD_GUI_
 #define __VFD_GUI_
@@ -76,5 +76,13 @@ void vfd_gui_set_maohao1(u8 open);
  * 第二位冒号，参数bool类型
  */
 void vfd_gui_set_maohao2(u8 open);
+
+/**
+ * 循环滚动展示所有文字,可显示任意长字符内容
+ * @param string 要展示的内容字符串
+ * @param delay_ms 循环展示刷新频率单位 Ms
+ * @param loop_count循环播放的次数
+ **/
+void vfd_gui_set_long_text(const char* string, u32 delay_ms, size_t loop_count);
 
 #endif

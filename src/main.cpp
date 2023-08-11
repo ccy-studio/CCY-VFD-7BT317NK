@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-09 23:55:00
+ * @LastEditTime: 2023-08-11 17:29:33
  */
 
 #include <Arduino.h>
@@ -35,7 +35,8 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1;  // 亮度等级
+u8 light_level = 1;       // 亮度等级
+u8 light_level_step = 4;  // 亮度等级步进级别
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
@@ -53,7 +54,7 @@ void setup() {
     // 初始化VFD
     delay(500);
     vfd_gui_init();
-
+    vfd_gui_set_blk_level(light_level);
     vfd_gui_set_text("START.");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
@@ -79,17 +80,19 @@ void setup() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     wifi_conn = 1;
+    vfd_gui_set_long_text("wifi connected ip:", 100, 1);
+    vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 100, 1);
     vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK);
-    vfd_gui_set_text("WAIT..");
+    vfd_gui_set_long_text("wait get timeinfo...", 100, 1);
     getTimeInfo();
 }
 
 void loop() {
-    delay(500);
     // Set VFD Text
     getTimeInfo();
     time_str.clear();
     if (style_page == STYLE_DEFAULT) {
+        delay(500);
         if (wifi_conn) {
             // 拼接时间字符串格式： HH:mm:ss
             time_str += (timeinfo.tm_hour < 10 ? "0" : "");
@@ -104,11 +107,10 @@ void loop() {
             mh_state = !mh_state;
         } else {
             // 如果联网失败
-            vfd_gui_set_text("UNLINK");
+            vfd_gui_set_long_text("Network disconnection", 100, 2);
         }
     } else if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_text("CLOCK.");
-        vfd_gui_set_icon(ICON_LEFT_ALL);
+        vfd_gui_set_long_text("-", 100, 2);
     }
 }
 
@@ -128,7 +130,7 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY1)) {
         k1_last_time = 0;
         Serial.println("Light-");
-        light_level -= 2;
+        light_level -= light_level_step;
         if (light_level <= 0) {
             light_level = 1;
         }
@@ -137,7 +139,7 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY2)) {
         k1_last_time = 0;
         Serial.println("Light+");
-        light_level += 2;
+        light_level += light_level_step;
         if (light_level > 7) {
             light_level = 7;
         }
