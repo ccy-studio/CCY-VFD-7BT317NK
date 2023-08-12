@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-12 16:01:55
+ * @LastEditTime: 2023-08-12 16:15:45
  */
 #include "gui.h"
 
@@ -23,12 +23,12 @@ void vfd_gui_init() {
 
     // ------------------------------------
     // V2版本用的频率
-    analogWriteFreq(20000);
-    analogWrite(PWM_PIN, 25);
+    // analogWriteFreq(20000);
+    // analogWrite(PWM_PIN, 25);
     // ------------------------------------
     // V1的频率
-    //  analogWriteFreq(20000);
-    //  analogWrite(PWM_PIN, 15);
+    analogWriteFreq(20000);
+    analogWrite(PWM_PIN, 15);
     // ------------------------------------
     // VFD Setting
     setDisplayMode(3);  // command1

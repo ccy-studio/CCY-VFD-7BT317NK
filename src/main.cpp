@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-12 15:43:18
+ * @LastEditTime: 2023-08-12 16:09:28
  */
 
 #include <Arduino.h>
@@ -60,7 +60,7 @@ void setup() {
     delay(500);
     vfd_gui_init();
     vfd_gui_set_blk_level(light_level);
-    vfd_gui_set_text("start.");
+    vfd_gui_set_text("vfd-v1");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
@@ -139,22 +139,22 @@ IRAM_ATTR void handle_key_interrupt() {
         light_level = 1;
         vfd_gui_set_blk_level(light_level);
     }
-    if (!digitalRead(KEY2)) {
+    if (!digitalRead(KEY3)) {
         k1_last_time = 0;
         Serial.println("Light+");
         light_level = 7;
         vfd_gui_set_blk_level(light_level);
     }
 
-    if (!digitalRead(KEY3)) {
+    if (!digitalRead(KEY2)) {
         Serial.println("FN");
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         style_page = !style_page;
         k1_last_time = micros();
         vfd_gui_cancel_long_text();
-    } else if (digitalRead(KEY1)) {
+    } else if (digitalRead(KEY2)) {
         // 高
-        if (digitalRead(KEY1) && digitalRead(KEY1)) {
+        if (digitalRead(KEY1) && digitalRead(KEY3)) {
             u32 sec = (micros() - k1_last_time) / 1000;
             if (k1_last_time != 0 && sec > 2000) {
                 Serial.println("长按操作触发");
@@ -175,7 +175,7 @@ void configModeCallback(WiFiManager* myWiFiManager) {
     Serial.println(myWiFiManager->getConfigPortalSSID());
     digitalWrite(LED_PIN, LOW);
     vfd_gui_clear();
-    vfd_gui_set_text("CONFIG");
+    vfd_gui_set_text("ap-run");
 }
 
 void getTimeInfo() {
