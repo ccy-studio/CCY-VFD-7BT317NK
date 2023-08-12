@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-12 15:43:18
+ * @LastEditTime: 2023-08-12 21:18:50
  */
 
 #include <Arduino.h>
@@ -60,7 +60,7 @@ void setup() {
     delay(500);
     vfd_gui_init();
     vfd_gui_set_blk_level(light_level);
-    vfd_gui_set_text("start.");
+    vfd_gui_set_text("vfd-v2");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
@@ -76,7 +76,7 @@ void setup() {
         while (1) {
             delay(500);
             digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-            vfd_gui_set_text("ERROR.");
+            vfd_gui_set_long_text("ap timeout Please power up again!", 200, 1);
         }
     }
 
@@ -116,7 +116,7 @@ void loop() {
             vfd_gui_set_long_text("Network disconnection", 100, 2);
         }
     } else if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_long_text("Hello World!^", 200, 3);
+        vfd_gui_set_long_text("hello vfd", 200, 3);
     }
 }
 
@@ -175,7 +175,7 @@ void configModeCallback(WiFiManager* myWiFiManager) {
     Serial.println(myWiFiManager->getConfigPortalSSID());
     digitalWrite(LED_PIN, LOW);
     vfd_gui_clear();
-    vfd_gui_set_text("CONFIG");
+    vfd_gui_set_text("ap-run");
 }
 
 void getTimeInfo() {

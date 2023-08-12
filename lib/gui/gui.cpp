@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-12 16:01:55
+ * @LastEditTime: 2023-08-12 21:16:25
  */
 #include "gui.h"
 
@@ -201,6 +201,10 @@ void vfd_gui_set_long_text(const char* string,
     buf = zreo_point;
     for (size_t i = 0; i < pageSize; i++) {
         if (long_cancel_flag) {
+            free(zreo_point);
+            zreo_point = NULL;
+            buf = NULL;
+            second_point = NULL;
             return;
         }
         if (vfd_gui_set_text(buf)) {
@@ -214,6 +218,10 @@ void vfd_gui_set_long_text(const char* string,
             buf = second_point;
             while (buf && *buf != '\0') {
                 if (long_cancel_flag) {
+                    free(zreo_point);
+                    zreo_point = NULL;
+                    buf = NULL;
+                    second_point = NULL;
                     return;
                 }
                 if (vfd_gui_set_text(buf)) {
