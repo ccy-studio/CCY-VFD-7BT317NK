@@ -2,13 +2,14 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-11 17:29:33
+ * @LastEditTime: 2023-08-12 15:43:18
  */
 
 #include <Arduino.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
+#include <Ticker.h>
 #include <WiFiManager.h>
 #include <gui.h>
 
@@ -35,12 +36,16 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1;       // 亮度等级
-u8 light_level_step = 4;  // 亮度等级步进级别
+u8 light_level = 1;  // 亮度等级
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
 u8 style_page = STYLE_DEFAULT;  // 页面显示样式
+
+// 定时器初始化
+Ticker task_anno;  // 动画执行器
+
+void init_tick();
 
 void setup() {
     Serial.begin(115200);
@@ -55,7 +60,7 @@ void setup() {
     delay(500);
     vfd_gui_init();
     vfd_gui_set_blk_level(light_level);
-    vfd_gui_set_text("START.");
+    vfd_gui_set_text("start.");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
@@ -80,10 +85,11 @@ void setup() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     wifi_conn = 1;
-    vfd_gui_set_long_text("wifi connected ip:", 100, 1);
-    vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 100, 1);
-    vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK);
-    vfd_gui_set_long_text("wait get timeinfo...", 100, 1);
+    init_tick();
+    vfd_gui_set_long_text("wifi connected", 210, 1);
+    vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 210, 1);
+    vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK, 1);
+    vfd_gui_set_text("wait.");
     getTimeInfo();
 }
 
@@ -92,8 +98,8 @@ void loop() {
     getTimeInfo();
     time_str.clear();
     if (style_page == STYLE_DEFAULT) {
-        delay(500);
         if (wifi_conn) {
+            delay(500);
             // 拼接时间字符串格式： HH:mm:ss
             time_str += (timeinfo.tm_hour < 10 ? "0" : "");
             time_str += timeinfo.tm_hour;
@@ -110,7 +116,7 @@ void loop() {
             vfd_gui_set_long_text("Network disconnection", 100, 2);
         }
     } else if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_long_text("-", 100, 2);
+        vfd_gui_set_long_text("Hello World!^", 200, 3);
     }
 }
 
@@ -130,19 +136,13 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY1)) {
         k1_last_time = 0;
         Serial.println("Light-");
-        light_level -= light_level_step;
-        if (light_level <= 0) {
-            light_level = 1;
-        }
+        light_level = 1;
         vfd_gui_set_blk_level(light_level);
     }
     if (!digitalRead(KEY2)) {
         k1_last_time = 0;
         Serial.println("Light+");
-        light_level += light_level_step;
-        if (light_level > 7) {
-            light_level = 7;
-        }
+        light_level = 7;
         vfd_gui_set_blk_level(light_level);
     }
 
@@ -151,6 +151,7 @@ IRAM_ATTR void handle_key_interrupt() {
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         style_page = !style_page;
         k1_last_time = micros();
+        vfd_gui_cancel_long_text();
     } else if (digitalRead(KEY1)) {
         // 高
         if (digitalRead(KEY1) && digitalRead(KEY1)) {
@@ -188,4 +189,16 @@ void getTimeInfo() {
             vfd_gui_set_maohao2(0);
         }
     }
+}
+
+/**
+ * 执行器-> G1动画执行器
+ */
+void task_anno_fun() {
+    vfd_gui_anno_for_g1(0);
+}
+
+void init_tick() {
+    // G1动画执行 帧率160ms
+    task_anno.attach_ms(160, task_anno_fun);
 }

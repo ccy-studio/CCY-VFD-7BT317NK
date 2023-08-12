@@ -2,10 +2,10 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-04 14:33:25
- * @LastEditTime: 2023-07-14 16:17:17
+ * @LastEditTime: 2023-08-11 22:31:57
  */
 
-//blog-address: saisaiwa.com
+// blog-address: saisaiwa.com
 
 #ifndef __PT6315__
 #define __PT6315__
@@ -37,7 +37,7 @@
 #endif
 
 #if PT_PLATFORM == STM32
-//todo 自己配置STM32的宏定义
+// todo 自己配置STM32的宏定义
 #endif
 
 /**

@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-04 14:33:32
- * @LastEditTime: 2023-07-29 12:48:49
+ * @LastEditTime: 2023-08-11 23:22:20
  */
 #include "pt6315.h"
 
@@ -100,7 +100,7 @@ void ptSetDisplayLight(uint8_t onOff, uint8_t brightnessVal) {
     delay_us(10);
     STB_0;
     delay_us(10);
-    //0x8f
+    // 0x8f
     writeData(command);
     delay_us(10);
     STB_1;
@@ -115,8 +115,7 @@ void sendDigAndData(uint8_t dig, const uint8_t* data, size_t len) {
     delay_us(10);
     // 写入数据
     for (size_t i = 0; i < len; i++) {
-        writeData(data[i],0);
-        // delay_us(10);
+        writeData(data[i], 0);
     }
     delay_us(10);
     STB_1;
