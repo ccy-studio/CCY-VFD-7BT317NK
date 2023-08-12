@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-12 16:09:28
+ * @LastEditTime: 2023-08-13 01:14:44
  */
 
 #include <Arduino.h>
@@ -36,7 +36,7 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1;  // 亮度等级
+u8 light_level = 7;  // 亮度等级
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
@@ -136,13 +136,21 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY1)) {
         k1_last_time = 0;
         Serial.println("Light-");
-        light_level = 1;
+        if (light_level == 2) {
+            light_level = 1;
+        } else if (light_level == 7) {
+            light_level = 2;
+        }
         vfd_gui_set_blk_level(light_level);
     }
     if (!digitalRead(KEY3)) {
         k1_last_time = 0;
         Serial.println("Light+");
-        light_level = 7;
+        if (light_level == 2) {
+            light_level = 7;
+        } else if (light_level == 1) {
+            light_level = 2;
+        }
         vfd_gui_set_blk_level(light_level);
     }
 
