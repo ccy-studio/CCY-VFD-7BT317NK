@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-12 21:18:50
+ * @LastEditTime: 2023-08-13 20:03:35
  */
 
 #include <Arduino.h>
@@ -136,13 +136,21 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!digitalRead(KEY1)) {
         k1_last_time = 0;
         Serial.println("Light-");
-        light_level = 1;
+        if (light_level == 2) {
+            light_level = 1;
+        } else if (light_level == 7) {
+            light_level = 2;
+        }
         vfd_gui_set_blk_level(light_level);
     }
     if (!digitalRead(KEY2)) {
         k1_last_time = 0;
         Serial.println("Light+");
-        light_level = 7;
+        if (light_level == 2) {
+            light_level = 7;
+        } else if (light_level == 1) {
+            light_level = 2;
+        }
         vfd_gui_set_blk_level(light_level);
     }
 
