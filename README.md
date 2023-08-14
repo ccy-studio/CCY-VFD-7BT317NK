@@ -56,7 +56,7 @@ https://oshwhub.com/yc_chen/vfd-317nk-qu-dong-ban
 ### V2板
 https://oshwhub.com/yc_chen/v2-vfd-7-bt-317nk-wifi-shi-zhong
 
-####  master
+####  release-v2.0
 
 新增功能
 - 长文字滚动显示
