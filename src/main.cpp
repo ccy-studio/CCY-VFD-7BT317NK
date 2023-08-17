@@ -2,18 +2,18 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-13 20:03:35
+ * @LastEditTime: 2023-08-17 23:57:45
  */
 
 #include <Arduino.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
+#include <FastLED.h>
 #include <Ticker.h>
 #include <WiFiManager.h>
 #include <gui.h>
 
-#define LED_PIN 15
 #define KEY1 2
 #define KEY2 4
 #define KEY3 5
@@ -21,6 +21,11 @@
 #define NTP1 "ntp1.aliyun.com"
 #define NTP2 "ntp2.aliyun.com"
 #define NTP3 "ntp3.aliyun.com"
+
+// LED
+#define LED_NUM 2
+#define LED_DATA_PIN 15
+CRGB leds[LED_NUM];
 
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
@@ -44,23 +49,28 @@ u8 style_page = STYLE_DEFAULT;  // 页面显示样式
 
 // 定时器初始化
 Ticker task_anno;  // 动画执行器
+Ticker task_led;  // LED执行器
 
 void init_tick();
 
 void setup() {
     Serial.begin(115200);
     pinMode(KEY1, INPUT);
-    pinMode(LED_PIN, OUTPUT);
+    pinMode(LED_DATA_PIN, OUTPUT);
     // 注册按键中断函数
     attachInterrupt(digitalPinToInterrupt(KEY1), handle_key_interrupt, CHANGE);
     set_key_listener();
 
-    digitalWrite(LED_PIN, HIGH);
+    // WS2812B 初始化
+    FastLED.addLeds<WS2812B, LED_DATA_PIN, RGB>(leds, LED_NUM).setCorrection(TypicalSMD5050);
+    // 亮度 0~255
+    FastLED.setBrightness(255);
+
     // 初始化VFD
     delay(500);
     vfd_gui_init();
     vfd_gui_set_blk_level(light_level);
-    vfd_gui_set_text("vfd-v2");
+    vfd_gui_set_text("vfd-03");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
@@ -75,7 +85,6 @@ void setup() {
         Serial.println("Failed to connect and hit timeout.");
         while (1) {
             delay(500);
-            digitalWrite(LED_PIN, !digitalRead(LED_PIN));
             vfd_gui_set_long_text("ap timeout Please power up again!", 200, 1);
         }
     }
@@ -156,7 +165,6 @@ IRAM_ATTR void handle_key_interrupt() {
 
     if (!digitalRead(KEY3)) {
         Serial.println("FN");
-        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         style_page = !style_page;
         k1_last_time = micros();
         vfd_gui_cancel_long_text();
@@ -181,7 +189,6 @@ void configModeCallback(WiFiManager* myWiFiManager) {
     Serial.println("Entered config mode");
     Serial.println(WiFi.softAPIP());
     Serial.println(myWiFiManager->getConfigPortalSSID());
-    digitalWrite(LED_PIN, LOW);
     vfd_gui_clear();
     vfd_gui_set_text("ap-run");
 }
@@ -206,7 +213,25 @@ void task_anno_fun() {
     vfd_gui_anno_for_g1(0);
 }
 
+void task_led_fun() {
+    static u8 led_r = 100, led_g = 150, led_b = 250;
+    if (led_r > 255) {
+        led_r = 100;
+    }
+    if (led_g > 255) {
+        led_g = 100;
+    }
+    if (led_b > 255) {
+        led_b = 100;
+    }
+    leds[0] = CHSV(led_r++, led_g++, 255);
+    leds[1] = CHSV(255 - led_r, 255 - led_g, 255);
+    FastLED.setBrightness(50);
+    FastLED.show();
+}
+
 void init_tick() {
     // G1动画执行 帧率160ms
     task_anno.attach_ms(160, task_anno_fun);
+    task_led.attach_ms(10, task_led_fun);
 }
