@@ -2,17 +2,19 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-17 23:57:45
+ * @LastEditTime: 2023-08-18 17:55:04
  */
 
 #include <Arduino.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-#include <FastLED.h>
 #include <Ticker.h>
 #include <WiFiManager.h>
+#include <buzzer.h>
 #include <gui.h>
+#include <rgb.h>
+#include <web_server.h>
 
 #define KEY1 2
 #define KEY2 4
@@ -21,11 +23,6 @@
 #define NTP1 "ntp1.aliyun.com"
 #define NTP2 "ntp2.aliyun.com"
 #define NTP3 "ntp3.aliyun.com"
-
-// LED
-#define LED_NUM 2
-#define LED_DATA_PIN 15
-CRGB leds[LED_NUM];
 
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
@@ -49,22 +46,22 @@ u8 style_page = STYLE_DEFAULT;  // 页面显示样式
 
 // 定时器初始化
 Ticker task_anno;  // 动画执行器
-Ticker task_led;  // LED执行器
+Ticker task_led;   // LED执行器
 
 void init_tick();
 
 void setup() {
     Serial.begin(115200);
     pinMode(KEY1, INPUT);
-    pinMode(LED_DATA_PIN, OUTPUT);
     // 注册按键中断函数
     attachInterrupt(digitalPinToInterrupt(KEY1), handle_key_interrupt, CHANGE);
     set_key_listener();
 
-    // WS2812B 初始化
-    FastLED.addLeds<WS2812B, LED_DATA_PIN, RGB>(leds, LED_NUM).setCorrection(TypicalSMD5050);
-    // 亮度 0~255
-    FastLED.setBrightness(255);
+    // RBG初始化
+    rgb_setup();
+    rgb_set_style(RGB_STYLE_2);
+    // 蜂鸣器初始化
+    buzzer_setup(handle_key_interrupt);
 
     // 初始化VFD
     delay(500);
@@ -85,7 +82,8 @@ void setup() {
         Serial.println("Failed to connect and hit timeout.");
         while (1) {
             delay(500);
-            vfd_gui_set_long_text("ap timeout Please power up again!", 200, 1);
+            vfd_gui_set_long_text("connect timeout Please power up again!", 200,
+                                  1);
         }
     }
 
@@ -100,6 +98,8 @@ void setup() {
     vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK, 1);
     vfd_gui_set_text("wait.");
     getTimeInfo();
+
+    buzzer_play_di();
 }
 
 void loop() {
@@ -214,20 +214,7 @@ void task_anno_fun() {
 }
 
 void task_led_fun() {
-    static u8 led_r = 100, led_g = 150, led_b = 250;
-    if (led_r > 255) {
-        led_r = 100;
-    }
-    if (led_g > 255) {
-        led_g = 100;
-    }
-    if (led_b > 255) {
-        led_b = 100;
-    }
-    leds[0] = CHSV(led_r++, led_g++, 255);
-    leds[1] = CHSV(255 - led_r, 255 - led_g, 255);
-    FastLED.setBrightness(50);
-    FastLED.show();
+    rbg_frame_update();
 }
 
 void init_tick() {
