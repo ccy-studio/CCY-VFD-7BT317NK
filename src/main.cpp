@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-18 17:55:04
+ * @LastEditTime: 2023-08-20 00:32:16
  */
 
 #include <Arduino.h>
@@ -14,7 +14,7 @@
 #include <buzzer.h>
 #include <gui.h>
 #include <rgb.h>
-#include <web_server.h>
+// #include <web_server.h>
 
 #define KEY1 2
 #define KEY2 4
@@ -38,7 +38,7 @@ String time_str = String();
 u8 wifi_conn = 0;
 u8 mh_state = 0;  // 冒号显示状态
 
-u8 light_level = 1;  // 亮度等级
+u8 light_level = 7;  // 亮度等级
 
 #define STYLE_DEFAULT 0
 #define STYLE_CUSTOM_1 1
@@ -98,7 +98,8 @@ void setup() {
     vfd_gui_set_icon(ICON_WIFI | ICON_CLOCK, 1);
     vfd_gui_set_text("wait.");
     getTimeInfo();
-
+    buzzer_play_di();
+    delay(100);
     buzzer_play_di();
 }
 

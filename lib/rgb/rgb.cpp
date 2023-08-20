@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 09:29:57
- * @LastEditTime: 2023-08-18 17:53:48
+ * @LastEditTime: 2023-08-19 23:49:45
  */
 #include <rgb.h>
 
@@ -70,7 +70,7 @@ void rbg_frame_update() {
         }
     } else if (rgb_style == RGB_STYLE_2) {
         static u8 hue = 0;
-        fill_rainbow(leds, RGB_LED_COUNT, hue, 10);
+        fill_rainbow(leds, RGB_LED_COUNT, hue++, 10);
     } else if (rgb_style == RGB_STYLE_3) {
     }
     FastLED.setBrightness(rgb_brightness);
