@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-21 15:47:38
- * @LastEditTime: 2023-08-21 18:02:30
+ * @LastEditTime: 2023-08-21 23:51:33
  * 结构体用指针传递更节省内存空间
  */
 #include <service.h>
@@ -39,8 +39,9 @@ void logic_handler_auto_power(tm* timeinfo, AutoPowerCallback callback) {
                 }
                 if (timeinfo->tm_hour == open_hours &&
                     (timeinfo->tm_min == open_minutes ||
-                     timeinfo->tm_min - 1 == open_minutes) &&
-                    (timeinfo->tm_sec >= open_seconds)) {
+                     timeinfo->tm_min == open_minutes) &&
+                    (timeinfo->tm_sec == open_seconds ||
+                     timeinfo->tm_sec - 1 == open_seconds)) {
                     // setup 开机
                     callback(1);
                     return;
@@ -61,8 +62,9 @@ void logic_handler_auto_power(tm* timeinfo, AutoPowerCallback callback) {
                 }
                 if (timeinfo->tm_hour == close_hours &&
                     (timeinfo->tm_min == close_minutes ||
-                     timeinfo->tm_min - 1 == close_minutes) &&
-                    (timeinfo->tm_sec >= close_seconds)) {
+                     timeinfo->tm_min == close_minutes) &&
+                    (timeinfo->tm_sec == close_seconds ||
+                     timeinfo->tm_sec - 1 == close_seconds)) {
                     // stop关机
                     callback(0);
                     return;

@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 09:29:57
- * @LastEditTime: 2023-08-21 21:57:46
+ * @LastEditTime: 2023-08-21 23:45:42
  */
 #include <rgb.h>
 
@@ -40,27 +40,14 @@ void rgb_set_style(u8 style) {
 
 void rbg_frame_update() {
     if (rgb_style == RGB_STYLE_1) {
-        // 呼吸效果
-        static uint8_t brightness = 0;
-        static bool increasing = true;
-
-        CRGB randomColor = CRGB(random(256), random(256), random(256));
-
-        leds[0] = randomColor;
-        leds[1] = randomColor;
-        if (increasing) {
-            brightness++;
-            if (brightness == rgb_brightness) {
-                increasing = false;
-            }
-        } else {
-            brightness--;
-            if (brightness == 0) {
-                increasing = true;
-            }
-        }
-        fadeToBlackBy(leds, RGB_LED_COUNT, 10);
-        FastLED.setBrightness(brightness);
+        static u8 hue1 = 0;
+        // 渐变呼吸
+        uint8_t brightness = beatsin8(
+            40, 0,
+            rgb_brightness);  // 生成一个60秒周期，0到255范围内变化的亮度值
+        leds[0] = CHSV(hue1, 255, brightness);
+        leds[1] = CHSV(hue1, 255, brightness);
+        hue1++;
     } else if (rgb_style == RGB_STYLE_2) {
         // 彩虹渐变
         static u8 hue = 0;

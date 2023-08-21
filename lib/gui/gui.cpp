@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-21 20:35:37
+ * @LastEditTime: 2023-08-21 23:53:01
  */
 #include "gui.h"
 
@@ -37,8 +37,11 @@ void vfd_gui_init() {
 }
 
 void vfd_gui_stop() {
-    analogWrite(PWM_PIN, 0);
     vfd_gui_clear();
+    current_icon_flag = 0;
+    mh1 = 0;
+    mh2 = 0;
+    digitalWrite(PWM_PIN, LOW);
 }
 
 void vfd_gui_clear() {
@@ -261,8 +264,8 @@ void vfd_gui_set_long_text(const char* string,
 void vfd_gui_anno_for_g1(u8 isAuto) {
     static size_t anno_frame = 0;
     static const u32 anno_arr[] = {
-        ICON_G1_STYLE_1, ICON_G1_STYLE_2, ICON_G1_STYLE_3,
         ICON_G1_STYLE_4, ICON_G1_STYLE_5, ICON_G1_STYLE_6,
+        ICON_G1_STYLE_1, ICON_G1_STYLE_2, ICON_G1_STYLE_3,
         ICON_G1_STYLE_7, ICON_G1_STYLE_8, ICON_G1_STYLE_9};
     if (isAuto) {
         anno_frame = 0;

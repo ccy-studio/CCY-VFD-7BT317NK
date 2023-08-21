@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-21 21:40:07
+ * @LastEditTime: 2023-08-22 00:01:37
  */
 
 #include <Arduino.h>
@@ -75,15 +75,11 @@ void setup() {
     // 读数据
     store_get_setting(&setting_obj);
 
-    // RBG初始化
-    rgb_setup();
-
     web_setup(configModeCallback, configModeTimeoutError);
 
     vfd_gui_set_long_text("wifi connected", 210, 1);
     vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 210, 1);
-    vfd_gui_set_icon(ICON_CLOCK, 1);
-    vfd_gui_set_text("wait.");
+    vfd_gui_set_text("load.");
     getTimeInfo();
     buzzer_play_di();
 }
@@ -142,6 +138,7 @@ IRAM_ATTR void handle_key_interrupt() {
     if (!power) {
         // 如果是休眠关机下，触发按键直接开机
         power_handle(1);
+        key_filter_sec = micros();
         return;
     }
     if (digitalRead(KEY3) && !digitalRead(KEY1) && !digitalRead(KEY2)) {
@@ -229,6 +226,7 @@ void task_time_refresh_fun() {
         vfd_gui_set_maohao2(mh_state);
         mh_state = !mh_state;
     }
+    vfd_gui_set_icon(ICON_CLOCK, 1);
     if (WiFi.isConnected()) {
         vfd_gui_set_icon(ICON_WIFI | vfd_gui_get_save_icon(), 0);
     }
@@ -247,13 +245,13 @@ void set_tick() {
     } else {
         if (task_anno.active()) {
             task_anno.detach();
-            vfd_gui_set_icon(vfd_gui_get_save_icon(), 0);
         }
     }
 
     // rgb设置
     if (setting_obj.rgb_open) {
         if (!task_led.active()) {
+            rgb_setup();
             task_led.attach_ms(RGB_ANNO_FRAME, task_led_fun);
         }
     } else {
@@ -286,18 +284,18 @@ void vfd_synchronous() {
  * 处理开关机
  */
 void power_handle(u8 state) {
-    power = state;
     if (!state) {
+        web_stop();
         task_time_refresh.detach();
         task_anno.detach();
         task_led.detach();
         rgb_clear();
         vfd_gui_cancel_long_text();
         vfd_gui_stop();
-        web_stop();
     } else {
-        vfd_gui_set_icon(vfd_gui_get_save_icon(), 1);
         style_page = STYLE_DEFAULT;
         vfd_gui_init();
+        rgb_setup();
     }
+    power = state;
 }
