@@ -66,7 +66,10 @@ void handle_404() {
 
 void http_reqeust_save_setteing() {
     String body = server.arg("plain");  // 获取POST请求的内容
+
+#ifdef DEBUG
     Serial.println("Received POST data: " + body);
+#endif
     // 解析JSON数据
     DynamicJsonDocument jsonDoc(1024);  // 调整合适的JSON文档大小
     DeserializationError error = deserializeJson(jsonDoc, body);

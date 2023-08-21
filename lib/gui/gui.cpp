@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-21 16:47:16
+ * @LastEditTime: 2023-08-21 20:35:37
  */
 #include "gui.h"
 
@@ -62,6 +62,10 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
 }
 
 void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
+    if (current_icon_flag == buf) {
+        // 过滤重复提交
+        return;
+    }
     uint8_t arr[3];
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;

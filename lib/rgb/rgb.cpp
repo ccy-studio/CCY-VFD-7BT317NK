@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 09:29:57
- * @LastEditTime: 2023-08-19 23:49:45
+ * @LastEditTime: 2023-08-21 21:57:46
  */
 #include <rgb.h>
 
@@ -31,57 +31,51 @@ void rgb_setup() {
         .setCorrection(TypicalSMD5050);
     // 亮度 0~255
     FastLED.setBrightness(255);
+    randomSeed(analogRead(0));  // 使用模拟引脚读取来设置随机种子
 }
 
 void rgb_set_style(u8 style) {
     rgb_style = style;
 }
 
-void rgb_set_val(rgb_led* led) {
-    if (led->r >= 255) {
-        led->i_r = 0;
-    } else if (led->r <= 0) {
-        led->i_r = 1;
-    }
-
-    if (led->g >= 255) {
-        led->i_g = 0;
-    } else if (led->g <= 0) {
-        led->i_g = 1;
-    }
-
-    if (led->b >= 255) {
-        led->i_b = 0;
-    } else if (led->b <= 0) {
-        led->i_b = 1;
-    }
-
-    led->r = led->i_r ? led->r + 1 : led->r - 1;
-    led->g = led->i_g ? led->g + 1 : led->g - 1;
-    led->b = led->i_b ? led->b + 1 : led->b - 1;
-}
-
 void rbg_frame_update() {
     if (rgb_style == RGB_STYLE_1) {
-        for (u8 i = 0; i < RGB_LED_COUNT; i++) {
-            rgb_led rgb = rgb_led_obj[i];
-            rgb_set_val(&rgb);
-            leds[i].setRGB(rgb.r, rgb.g, rgb.b);
+        // 呼吸效果
+        static uint8_t brightness = 0;
+        static bool increasing = true;
+
+        CRGB randomColor = CRGB(random(256), random(256), random(256));
+
+        leds[0] = randomColor;
+        leds[1] = randomColor;
+        if (increasing) {
+            brightness++;
+            if (brightness == rgb_brightness) {
+                increasing = false;
+            }
+        } else {
+            brightness--;
+            if (brightness == 0) {
+                increasing = true;
+            }
         }
+        fadeToBlackBy(leds, RGB_LED_COUNT, 10);
+        FastLED.setBrightness(brightness);
     } else if (rgb_style == RGB_STYLE_2) {
+        // 彩虹渐变
         static u8 hue = 0;
         fill_rainbow(leds, RGB_LED_COUNT, hue++, 10);
+        FastLED.setBrightness(rgb_brightness);
     } else if (rgb_style == RGB_STYLE_3) {
     }
-    FastLED.setBrightness(rgb_brightness);
     FastLED.show();
 }
 
 void rgb_set_brightness(u8 brightness) {
     rgb_brightness = brightness;
-    rgb_clear();
 }
 
 void rgb_clear() {
-    FastLED.clear();
+    FastLED.setBrightness(0);
+    FastLED.clear(true);
 }

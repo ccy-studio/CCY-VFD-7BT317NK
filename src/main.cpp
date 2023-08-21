@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-21 17:01:57
+ * @LastEditTime: 2023-08-21 21:40:07
  */
 
 #include <Arduino.h>
@@ -56,7 +56,7 @@ Ticker task_time_refresh;  // 时间刷新
 
 void setup() {
     Serial.begin(115200);
-    
+
     set_key_listener();
 
     // 蜂鸣器初始化
@@ -126,11 +126,6 @@ void getTimeInfo() {
     if (!getLocalTime(&timeinfo)) {
         if (WiFi.isConnected()) {
             configTime(8 * 3600, 0, NTP1, NTP2, NTP3);
-        }
-    }
-    if (power) {
-        if (WiFi.isConnected()) {
-            vfd_gui_set_icon(ICON_WIFI | vfd_gui_get_save_icon(), 0);
         }
     }
 }
@@ -234,6 +229,9 @@ void task_time_refresh_fun() {
         vfd_gui_set_maohao2(mh_state);
         mh_state = !mh_state;
     }
+    if (WiFi.isConnected()) {
+        vfd_gui_set_icon(ICON_WIFI | vfd_gui_get_save_icon(), 0);
+    }
 }
 
 void set_tick() {
@@ -249,8 +247,8 @@ void set_tick() {
     } else {
         if (task_anno.active()) {
             task_anno.detach();
+            vfd_gui_set_icon(vfd_gui_get_save_icon(), 0);
         }
-        vfd_gui_set_icon(vfd_gui_get_save_icon(), 0);
     }
 
     // rgb设置
@@ -272,8 +270,15 @@ void set_tick() {
 
 void vfd_synchronous() {
     if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_long_text(setting_obj.custom_long_text,
-                              setting_obj.custom_long_text_frame, 2);
+        static char long_text[50];
+        if (strlen(setting_obj.custom_long_text) != 0 &&
+            strcmp(long_text, setting_obj.custom_long_text)) {
+            delay(50);
+            memset(long_text, 0, sizeof(long_text));
+            memcpy(long_text, setting_obj.custom_long_text,
+                   sizeof(setting_obj.custom_long_text));
+        }
+        vfd_gui_set_long_text(long_text, setting_obj.custom_long_text_frame, 2);
     }
 }
 

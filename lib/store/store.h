@@ -3,12 +3,13 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 15:43:27
- * @LastEditTime: 2023-08-21 14:08:39
+ * @LastEditTime: 2023-08-21 21:12:37
  */
 #ifndef __STORE_H
 #define __STORE_H
 
 #include <Arduino.h>
+#include <constant.h>
 
 typedef struct {
     u8 anno_open = 1;         // G1动画开关
