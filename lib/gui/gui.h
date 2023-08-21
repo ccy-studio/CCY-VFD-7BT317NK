@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:11:16
- * @LastEditTime: 2023-08-12 14:54:33
+ * @LastEditTime: 2023-08-21 15:18:59
  */
 #ifndef __VFD_GUI_
 #define __VFD_GUI_
@@ -19,29 +19,30 @@
 #define ICON_WIFI 0x00001000
 
 #define ICON_G1_ALL 0xFFE1FE
-#define ICON_G1_STYLE_1 0x010000 
-#define ICON_G1_STYLE_2 0x040000 
-#define ICON_G1_STYLE_3 0x080000 
-#define ICON_G1_STYLE_4 0x100000 
-#define ICON_G1_STYLE_5 0x200000 
-#define ICON_G1_STYLE_6 0x400000 
-#define ICON_G1_STYLE_7 0x800000 
-#define ICON_G1_STYLE_8 0x020000 
-#define ICON_G1_STYLE_9 0x000100 
+#define ICON_G1_STYLE_1 0x010000
+#define ICON_G1_STYLE_2 0x040000
+#define ICON_G1_STYLE_3 0x080000
+#define ICON_G1_STYLE_4 0x100000
+#define ICON_G1_STYLE_5 0x200000
+#define ICON_G1_STYLE_6 0x400000
+#define ICON_G1_STYLE_7 0x800000
+#define ICON_G1_STYLE_8 0x020000
+#define ICON_G1_STYLE_9 0x000100
 
 #define ICON_NONE 0  // 清空所有ICON显示
 
-//VFD位数
+// VFD位数
 #define VFD_DIG_LEN 6
 
 // 灯丝PWM引脚
 #define PWM_PIN 13
 
-
 /**
  * 初始化
  */
 void vfd_gui_init();
+
+void vfd_gui_stop();
 
 /**
  * 清空VFD屏幕显示,循环刷新如果使用vfd_gui_set_text方法不需要使用它。
@@ -62,7 +63,10 @@ u8 vfd_gui_set_text(const char* string);
 /**
  * 要点亮的ICON图标，宏定义传参
  */
-void vfd_gui_set_icon(u32 buf,u8 is_save_state = 1);
+void vfd_gui_set_icon(u32 buf, u8 is_save_state = 1);
+
+u32 vfd_gui_get_save_icon(void);
+
 /**
  * 背光开关
  */
@@ -87,22 +91,23 @@ void vfd_gui_set_maohao2(u8 open);
  * 循环滚动展示所有文字,可显示任意长字符内容
  * @param string 要展示的内容字符串
  * @param delay_ms 循环展示刷新频率单位 Ms
- * @param loop_count循环播放的次数
+ * @param loop_count 循环播放的次数
  **/
 void vfd_gui_set_long_text(const char* string, u32 delay_ms, size_t loop_count);
 /**
  * 如果调用vfd_gui_set_long_text有存在循环播放未结束的调用此方法将会强制结束
-*/
+ */
 void vfd_gui_cancel_long_text();
 
 /**
  * 获取字库值，内部用
-*/
+ */
 u32 gui_get_font(char c);
 
 /**
  * G1动画特效
- * @param isAuto 是否自动完成触发 1自动循环执行播放,0.外部给时钟触发(方法调用一次执行动画一帧)
-*/
+ * @param isAuto 是否自动完成触发
+ * 1自动循环执行播放,0.外部给时钟触发(方法调用一次执行动画一帧)
+ */
 void vfd_gui_anno_for_g1(u8 isAuto = 1);
 #endif

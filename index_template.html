@@ -3,7 +3,8 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 11:14:49
- * @LastEditTime: 2023-08-18 17:46:25
+ * @LastEditTime: 2023-08-21 18:02:40
+ * 压缩工具： https://www.lddgo.net/string/html-beautify-minify
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -62,8 +63,8 @@
                         </el-form-item>
                         <el-form-item label="RGB灯效样式" v-if="form.rgbOpen">
                             <el-radio-group v-model="form.rgbStyle">
-                                <el-radio label="线性循环" label="1"></el-radio>
-                                <el-radio label="彩虹渐变" label="2"></el-radio>
+                                <el-radio :label="1">线性循环</el-radio>
+                                <el-radio :label="2">彩虹渐变</el-radio>
                             </el-radio-group>
                         </el-form-item>
 
@@ -76,7 +77,8 @@
 
 
                         <el-form-item label="滚动文字">
-                            <el-input v-model="form.customLongText" placeholder="请输入文字" autosize clearable></el-input>
+                            <el-input maxlength="48" show-word-limit v-model="form.customLongText" placeholder="请输入文字"
+                                autosize clearable></el-input>
                         </el-form-item>
                         <el-form-item label="滚动文字帧率(ms)">
                             <el-input v-model="form.customLongTextFrame" placeholder="请输入文字" type="number"
@@ -86,37 +88,38 @@
                             <el-switch v-model="form.autoPower"></el-switch>
                         </el-form-item>
                         <el-form-item label="开机时间设定" v-if="form.autoPower">
-                            <el-time-picker clearable v-model="form.autoPowerOpenTime" placeholder="任意时间点">
+                            <el-time-picker value-format="HH:mm:ss" clearable v-model="form.autoPowerOpenTime"
+                                placeholder="任意时间点">
                         </el-form-item>
                         <el-form-item label="关机时间设定" v-if="form.autoPower">
-                            <el-time-picker clearable v-model="form.autoPowerCloseTime"
+                            <el-time-picker clearable v-model="form.autoPowerCloseTime" value-format="HH:mm:ss"
                                 placeholder="任意时间点"></el-time-picker>
                         </el-form-item>
                         <el-form-item label="开关机生效条件" v-if="form.autoPower">
                             <el-checkbox-group v-model="form.autoPowerEnableDays">
-                                <el-checkbox label="1">周一</el-checkbox>
-                                <el-checkbox label="2">周二</el-checkbox>
-                                <el-checkbox label="3">周三</el-checkbox>
-                                <el-checkbox label="4">周四</el-checkbox>
-                                <el-checkbox label="5">周五</el-checkbox>
-                                <el-checkbox label="6">周六</el-checkbox>
-                                <el-checkbox label="7">周天</el-checkbox>
+                                <el-checkbox :label="1">周一</el-checkbox>
+                                <el-checkbox :label="2">周二</el-checkbox>
+                                <el-checkbox :label="3">周三</el-checkbox>
+                                <el-checkbox :label="4">周四</el-checkbox>
+                                <el-checkbox :label="5">周五</el-checkbox>
+                                <el-checkbox :label="6">周六</el-checkbox>
+                                <el-checkbox :label="0">周天</el-checkbox>
                             </el-checkbox-group>
                         </el-form-item>
                         <el-form-item label="闹钟">
                             <el-switch v-model="form.alarmClock"></el-switch>
                             <el-time-picker style="margin-left: 10px;" v-if="form.alarmClock" clearable
-                                v-model="form.alarmClockTime" placeholder="任意时间点">
+                                value-format="HH:mm:ss" v-model="form.alarmClockTime" placeholder="任意时间点">
                         </el-form-item>
                         <el-form-item label="闹钟生效条件" v-if="form.alarmClock">
                             <el-checkbox-group v-model="form.alarmClockEnableDays">
-                                <el-checkbox label="1">周一</el-checkbox>
-                                <el-checkbox label="2">周二</el-checkbox>
-                                <el-checkbox label="3">周三</el-checkbox>
-                                <el-checkbox label="4">周四</el-checkbox>
-                                <el-checkbox label="5">周五</el-checkbox>
-                                <el-checkbox label="6">周六</el-checkbox>
-                                <el-checkbox label="7">周天</el-checkbox>
+                                <el-checkbox :label="1">周一</el-checkbox>
+                                <el-checkbox :label="2">周二</el-checkbox>
+                                <el-checkbox :label="3">周三</el-checkbox>
+                                <el-checkbox :label="4">周四</el-checkbox>
+                                <el-checkbox :label="5">周五</el-checkbox>
+                                <el-checkbox :label="6">周六</el-checkbox>
+                                <el-checkbox :label="0">周天</el-checkbox>
                             </el-checkbox-group>
                         </el-form-item>
                         <el-form-item label="倒计时">
@@ -125,7 +128,8 @@
                                     type="primary">{{form.countdown?"待执行":"未设定"}}</el-tag>
                             </span>
                             <el-switch v-model="form.countdown"></el-switch>
-                            <el-time-picker style="margin-left: 10px;" v-if="form.countdown" clearable :picker-options="{
+                            <el-time-picker style="margin-left: 10px;" v-if="form.countdown" value-format="HH:mm:ss"
+                                clearable :picker-options="{
                                 start: '00:00:01',
                                 step: '00:00:01',
                                 end: '12:59:59'
@@ -179,14 +183,19 @@
             },
             mounted() {
                 this.getSettingData();
-
             },
             methods: {
                 getSettingData() {
-                    axios.get("/get-setting").then(function (res) {
+                    axios.get("get-setting").then(function (res) {
                         var data = res.data;
-                        console.log(data);
-                        this.form = data;
+                        vm.form = data;
+                        vm.form.alarmClockEnableDays = data.alarmClockEnableDays.filter(function (element) {
+                            return element !== 0;
+                        });
+                        vm.form.autoPowerEnableDays = data.autoPowerEnableDays.filter(function (element) {
+                            return element !== 0;
+                        });
+                        console.log(vm.form);
                     });
                 },
                 saveSetting() {
@@ -196,13 +205,21 @@
                         method: 'POST',
                         data: this.form
                     }).then(function (res) {
-                        this.btnLoading = false;
                         console.log(res.data);
-                        this.$notify({
-                            title: '成功',
-                            message: '保存成功',
-                            type: 'success'
-                        });
+                        if (res.data === "success") {
+                            vm.btnLoading = false;
+                            vm.$notify({
+                                title: '成功',
+                                message: '保存成功',
+                                type: 'success'
+                            });
+                        } else {
+                            vm.$notify({
+                                title: '错误',
+                                message: '系统异常',
+                                type: 'error'
+                            });
+                        }
                     });
                 }
             }

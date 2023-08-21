@@ -3,13 +3,36 @@
 #include <web_server.h>
 
 ESP8266WebServer server(80);
+WiFiManager wifiManager;
 
 void handle_index();
 void handle_404();
 void http_reqeust_save_setteing();
 void http_reqeust_get_setteing();
 
-void web_setup() {
+void web_setup(ConfigModeCallback modeCallback,
+               ConfigTimeOutCallback timeoutCallback) {
+    printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
+    printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
+
+    wifiManager.setAPCallback(modeCallback);
+    wifiManager.setCountry("CN");
+    wifiManager.setBreakAfterConfig(true);
+    wifiManager.setTimeout(60);
+    // wifiManager.setDebugOutput(false);
+    String ssid = "VFD-" + String(ESP.getChipId());
+    if (!wifiManager.autoConnect(ssid.c_str(), NULL)) {
+        Serial.println("Failed to connect and hit timeout.");
+        while (1) {
+            timeoutCallback();
+        }
+    }
+
+    // 配网成功，打印连接信息
+    Serial.println("Connected to WiFi!");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+
     server.begin();
     server.on("/", handle_index);
     server.on("/save-setting", http_reqeust_save_setteing);
@@ -17,8 +40,19 @@ void web_setup() {
     server.onNotFound(handle_404);
 }
 
+void web_stop() {
+    server.close();
+    wifiManager.disconnect();
+}
+
 void web_loop() {
-    server.handleClient();
+    if (WiFi.isConnected()) {
+        server.handleClient();
+    }
+}
+
+void wifi_erase() {
+    wifiManager.erase();
 }
 
 void handle_index() {
@@ -75,10 +109,15 @@ void http_reqeust_save_setteing() {
     setting_obj.countdown = root["countdown"].as<u8>();
     strcpy(setting_obj.countdown_time, root["countdownTime"]);
 
+#ifdef DEBUG
     // 测试打印输出结果
     store_print_debug(setting_obj);
+#endif
 
-    server.send(200, "application/json", "{'msg':'success'}");
+    // 写数据
+    store_save_setting(&setting_obj);
+
+    server.send(200, "application/json", "success");
 }
 
 void http_reqeust_get_setteing() {
@@ -86,13 +125,13 @@ void http_reqeust_get_setteing() {
     DynamicJsonDocument jsonDoc(1024);
 
     // 将结构体数据转换为JSON
-    jsonDoc["annoOpen"] = setting_obj.anno_open;
-    jsonDoc["rgbOpen"] = setting_obj.rgb_open;
+    jsonDoc["annoOpen"] = setting_obj.anno_open ? true : false;
+    jsonDoc["rgbOpen"] = setting_obj.rgb_open ? true : false;
     jsonDoc["rgbStyle"] = setting_obj.rgb_style;
     jsonDoc["rgbBrightness"] = setting_obj.rgb_brightness;
     jsonDoc["customLongText"] = setting_obj.custom_long_text;
     jsonDoc["customLongTextFrame"] = setting_obj.custom_long_text_frame;
-    jsonDoc["autoPower"] = setting_obj.auto_power;
+    jsonDoc["autoPower"] = setting_obj.auto_power ? true : false;
     jsonDoc["autoPowerOpenTime"] = setting_obj.auto_power_open_time;
     jsonDoc["autoPowerCloseTime"] = setting_obj.auto_power_close_time;
 
@@ -102,7 +141,7 @@ void http_reqeust_get_setteing() {
         autoPowerEnableDaysArray.add(setting_obj.auto_power_enable_days[i]);
     }
 
-    jsonDoc["alarmClock"] = setting_obj.alarm_clock;
+    jsonDoc["alarmClock"] = setting_obj.alarm_clock ? true : false;
     jsonDoc["alarmClockTime"] = setting_obj.alarm_clock_time;
 
     JsonArray alarmClockEnableDaysArray =
@@ -111,7 +150,7 @@ void http_reqeust_get_setteing() {
         alarmClockEnableDaysArray.add(setting_obj.alarm_clock_enable_days[i]);
     }
 
-    jsonDoc["countdown"] = setting_obj.countdown;
+    jsonDoc["countdown"] = setting_obj.countdown ? true : false;
     jsonDoc["countdownTime"] = setting_obj.countdown_time;
 
     // 将JSON数据发送到客户端

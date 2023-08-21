@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-12 14:14:04
- * @LastEditTime: 2023-08-12 21:16:25
+ * @LastEditTime: 2023-08-21 16:47:16
  */
 #include "gui.h"
 
@@ -13,6 +13,7 @@ u8 mh1, mh2;  // 冒号1、2
 
 // 记录当前设置单独ICON的值
 u32 current_icon_flag = 0;
+u32 save_icon = 0;
 static u8 long_cancel_flag = 0;
 
 void vfd_gui_init() {
@@ -22,7 +23,7 @@ void vfd_gui_init() {
     // 设置PWM的频率单位hz
 
     // ------------------------------------
-    // V2版本用的频率
+    // V2V3版本用的频率
     analogWriteFreq(20000);
     analogWrite(PWM_PIN, 25);
     // ------------------------------------
@@ -32,6 +33,11 @@ void vfd_gui_init() {
     // ------------------------------------
     // VFD Setting
     setDisplayMode(3);  // command1
+    vfd_gui_clear();
+}
+
+void vfd_gui_stop() {
+    analogWrite(PWM_PIN, 0);
     vfd_gui_clear();
 }
 
@@ -64,8 +70,13 @@ void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
     sendDigAndData(0, arr, 3);                // command3
     ptSetDisplayLight(lightOff, lightLevel);  // command4
     if (is_save_state) {
-        current_icon_flag = buf;
+        save_icon = buf;
     }
+    current_icon_flag = buf;
+}
+
+u32 vfd_gui_get_save_icon(void) {
+    return save_icon;
 }
 
 u8 vfd_gui_set_text(const char* string) {
@@ -128,7 +139,7 @@ void vfd_gui_set_maohao2(u8 open) {
  * 循环滚动展示所有文字,可显示任意长字符内容
  * @param string 要展示的内容字符串
  * @param delay_ms 循环展示刷新频率单位 Ms
- * @param loop_count循环播放的次数
+ * @param loop_count 循环播放的次数
  **/
 void vfd_gui_set_long_text(const char* string,
                            u32 delay_ms,
