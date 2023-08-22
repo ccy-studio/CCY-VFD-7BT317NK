@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-13 01:14:44
+ * @LastEditTime: 2023-08-22 11:38:13
  */
 
 #include <Arduino.h>
@@ -26,6 +26,7 @@ void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
 void getTimeInfo();
 void configModeCallback(WiFiManager* myWiFiManager);
+void task_led_fun();
 
 u32 key_filter_sec = 0;         // 按键防抖
 volatile u32 k1_last_time = 0;  // 按键1的上一次按下触发时间记录
@@ -34,7 +35,8 @@ WiFiManager wifiManager;
 tm timeinfo;
 String time_str = String();
 u8 wifi_conn = 0;
-u8 mh_state = 0;  // 冒号显示状态
+u8 mh_state = 0;   // 冒号显示状态
+u8 led_state = 1;  // LED呼吸灯特性
 
 u8 light_level = 7;  // 亮度等级
 
@@ -44,6 +46,7 @@ u8 style_page = STYLE_DEFAULT;  // 页面显示样式
 
 // 定时器初始化
 Ticker task_anno;  // 动画执行器
+Ticker task_led;   // 动画执行器
 
 void init_tick();
 
@@ -60,7 +63,7 @@ void setup() {
     delay(500);
     vfd_gui_init();
     vfd_gui_set_blk_level(light_level);
-    vfd_gui_set_text("vfd-v1");
+    vfd_gui_set_text("V1.1");
 
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
@@ -116,7 +119,7 @@ void loop() {
             vfd_gui_set_long_text("Network disconnection", 100, 2);
         }
     } else if (style_page == STYLE_CUSTOM_1) {
-        vfd_gui_set_long_text("Hello World!^", 200, 3);
+        vfd_gui_set_long_text(">Hello-VFD<", 200, 3);
     }
 }
 
@@ -133,7 +136,9 @@ IRAM_ATTR void handle_key_interrupt() {
     if (filter_sec < 500) {
         return;
     }
-    if (!digitalRead(KEY1)) {
+    if (!digitalRead(KEY1) && !digitalRead(KEY2) && digitalRead(KEY3)) {
+        led_state = !led_state;
+    } else if (!digitalRead(KEY1)) {
         k1_last_time = 0;
         Serial.println("Light-");
         if (light_level == 2) {
@@ -142,8 +147,7 @@ IRAM_ATTR void handle_key_interrupt() {
             light_level = 2;
         }
         vfd_gui_set_blk_level(light_level);
-    }
-    if (!digitalRead(KEY3)) {
+    } else if (!digitalRead(KEY3)) {
         k1_last_time = 0;
         Serial.println("Light+");
         if (light_level == 2) {
@@ -152,11 +156,8 @@ IRAM_ATTR void handle_key_interrupt() {
             light_level = 2;
         }
         vfd_gui_set_blk_level(light_level);
-    }
-
-    if (!digitalRead(KEY2)) {
+    } else if (!digitalRead(KEY2)) {
         Serial.println("FN");
-        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         style_page = !style_page;
         k1_last_time = micros();
         vfd_gui_cancel_long_text();
@@ -206,7 +207,30 @@ void task_anno_fun() {
     vfd_gui_anno_for_g1(0);
 }
 
+/**
+ * 执行器-> LED呼吸灯
+ */
+void task_led_fun() {
+    if (!led_state) {
+        return;
+    }
+    static u8 direction = 1;
+    static u8 _led_pwm = 0;
+    analogWrite(LED_PIN, _led_pwm);
+    if (direction) {
+        _led_pwm++;
+    } else {
+        _led_pwm--;
+    }
+    if (_led_pwm >= 255) {
+        direction = 0;
+    } else if (_led_pwm <= 0) {
+        direction = 1;
+    }
+}
+
 void init_tick() {
     // G1动画执行 帧率160ms
     task_anno.attach_ms(160, task_anno_fun);
+    task_led.attach_ms(50, task_led_fun);
 }
