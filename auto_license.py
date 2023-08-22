@@ -3,7 +3,7 @@ Description:
 Blog: saisaiwa.com
 Author: ccy
 Date: 2023-08-22 16:36:04
-LastEditTime: 2023-08-22 16:36:25
+LastEditTime: 2023-08-22 16:51:22
 '''
 import os
 
@@ -30,7 +30,7 @@ copyright_notice = """
 allowed_extensions = ['.cpp', '.h']
 
 # 遍历当前目录及其子目录下的文件
-for root, dirs, files in os.walk('.'):
+for root, dirs, files in os.walk('lib'):
     for file in files:
         # 仅处理指定的文件后缀名
         if any(file.endswith(ext) for ext in allowed_extensions):
@@ -38,8 +38,10 @@ for root, dirs, files in os.walk('.'):
             # 读取原文件内容
             with open(file_path, 'r', encoding='utf-8') as f:
                 file_content = f.read()
-
-            # 将版权声明插入到文件头部
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(copyright_notice + '\n' + file_content)
-            print(f"已在文件 {file_path} 中添加版权声明。")
+            if not file_content.strip().startswith("/****************************"):
+                # 将版权声明插入到文件头部
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(copyright_notice.strip() + '\n\n' + file_content)
+                print(f"已在文件 {file_path} 中添加版权声明。")
+            else:
+                print(f"文件 {file_path} 已包含版权声明，忽略添加。")
