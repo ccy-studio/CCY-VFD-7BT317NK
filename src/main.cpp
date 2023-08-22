@@ -2,7 +2,7 @@
  * @Description:
  * @Author: chenzedeng
  * @Date: 2023-07-28 21:57:30
- * @LastEditTime: 2023-08-22 00:01:37
+ * @LastEditTime: 2023-08-22 10:09:03
  */
 
 #include <Arduino.h>
@@ -284,6 +284,9 @@ void vfd_synchronous() {
  * 处理开关机
  */
 void power_handle(u8 state) {
+    if (power == state) {
+        return;
+    }
     if (!state) {
         web_stop();
         task_time_refresh.detach();
