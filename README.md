@@ -64,7 +64,7 @@ doc 文件夹下有所需要的一些资料文件。
 
 
 
-<img src="./doc/vfd_web.png" style="zoom:90%;" align="left"/>
+<img src="./doc/vfd_web.png" style="zoom:90%;" />
 
 
 
