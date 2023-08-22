@@ -1,9 +1,16 @@
+/*
+ * @Description:
+ * @Author: chenzedeng
+ * @Date: 2023-08-22 20:02:51
+ * @LastEditTime: 2023-08-22 20:47:48
+ */
 /***********************************************************************************************
  * 版权声明：
  * 本源代码的版权归 [saisaiwa] 所有。
  *
  * 未经版权所有者明确授权，不得将本代码的任何部分用于商业用途，包括但不限于出售、出租、许可或发布。
- * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系 [yustart@foxmail.com] 进行授权。
+ * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系
+ *[yustart@foxmail.com] 进行授权。
  *
  * 在遵循以下条件的情况下，您可以自由修改、使用和分发本代码：
  * - 您必须保留此版权声明的所有内容。
@@ -70,6 +77,15 @@ void rbg_frame_update() {
         fill_rainbow(leds, RGB_LED_COUNT, hue++, 10);
         FastLED.setBrightness(rgb_brightness);
     } else if (rgb_style == RGB_STYLE_3) {
+        static u8 direction = 1;
+        for (int i = 0; i < RGB_LED_COUNT; i++) {
+            if (direction) {
+                leds[i] = CRGB::White;
+            } else {
+                leds[i] = CRGB::Black;
+            }
+        }
+        direction = !direction;
     }
     FastLED.show();
 }

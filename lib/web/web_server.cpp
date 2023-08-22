@@ -31,6 +31,10 @@ void web_setup(ConfigModeCallback modeCallback,
     printf("WIFI SSID:%s\n", wifiManager.getWiFiSSID().c_str());
     printf("WIFI PWD:%s\n", wifiManager.getWiFiPass().c_str());
 
+    if(WiFi.isConnected()){
+        return;
+    }
+
     wifiManager.setAPCallback(modeCallback);
     wifiManager.setCountry("CN");
     wifiManager.setBreakAfterConfig(true);

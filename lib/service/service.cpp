@@ -3,7 +3,8 @@
  * 本源代码的版权归 [saisaiwa] 所有。
  *
  * 未经版权所有者明确授权，不得将本代码的任何部分用于商业用途，包括但不限于出售、出租、许可或发布。
- * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系 [yustart@foxmail.com] 进行授权。
+ * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系
+ *[yustart@foxmail.com] 进行授权。
  *
  * 在遵循以下条件的情况下，您可以自由修改、使用和分发本代码：
  * - 您必须保留此版权声明的所有内容。
@@ -131,8 +132,7 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
         sscanf(save_utime, "%hhd:%hhd:%hhd", &count_hours, &count_minutes,
                &count_seconds);
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
-            setting_obj.countdown = 0;
-            store_save_setting(&setting_obj);
+            logic_handler_countdown_stop();
             return;
         }
         s = timeinfo->tm_sec;
@@ -142,8 +142,7 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
         // 非首次
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
             // 结束
-            setting_obj.countdown = 0;
-            store_save_setting(&setting_obj);
+            logic_handler_countdown_stop();
             callback(0, count_hours, count_minutes, count_seconds);
             return;
         } else {
@@ -183,6 +182,7 @@ void logic_handler_countdown_stop() {
     if (!setting_obj.countdown) {
         return;
     }
+    memset(setting_obj.countdown_time, 0, sizeof(setting_obj.countdown_time));
     setting_obj.countdown = 0;
     store_save_setting(&setting_obj);
 }

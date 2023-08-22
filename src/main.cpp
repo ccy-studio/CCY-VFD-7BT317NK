@@ -3,7 +3,8 @@
  * 本源代码的版权归 [saisaiwa] 所有。
  *
  * 未经版权所有者明确授权，不得将本代码的任何部分用于商业用途，包括但不限于出售、出租、许可或发布。
- * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系 [yustart@foxmail.com] 进行授权。
+ * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系
+ *[yustart@foxmail.com] 进行授权。
  *
  * 在遵循以下条件的情况下，您可以自由修改、使用和分发本代码：
  * - 您必须保留此版权声明的所有内容。
@@ -36,9 +37,9 @@
 #define KEY2 4
 #define KEY3 5
 
-#define NTP1 "cn.ntp.org.cn"
-#define NTP2 "ntp1.aliyun.com"
-#define NTP3 "pool.ntp.org.cn"
+#define NTP1 "ntp.ntsc.ac.cn"
+#define NTP2 "cn.ntp.org.cn" 
+#define NTP3 "ntp.tuna.tsinghua.edu.cn"
 
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
@@ -102,6 +103,7 @@ void setup() {
     vfd_gui_set_long_text("wifi connected", 210, 1);
     vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 210, 1);
     vfd_gui_set_text("load.");
+
     configTime(8 * 3600, 0, NTP1, NTP2, NTP3);
     settimeofday_cb(time_is_set);
     getTimeInfo();
@@ -352,16 +354,16 @@ void alarm_handle(u8 state) {
     // 处理状态
     static u8 handle_state = 1;
     if (handle_state) {
-        printf("闹钟触发\n");
         // 已处理
         handle_state = 0;
-        for (size_t i = 0; i < 6; i++) {
+        task_time_refresh.detach();
+        vfd_gui_set_text("alarm.");
+        for (size_t i = 0; i < 10; i++) {
             delay(350);
             buzzer_play_di(100);
         }
         // 重置到待处理
         handle_state = 0;
-        printf("闹钟触发结束-----\n");
     }
 }
 
@@ -385,9 +387,7 @@ void countdown_handle(u8 state, u8 hour, u8 min, u8 sec) {
         if (WiFi.isConnected()) {
             vfd_gui_set_icon(ICON_WIFI | vfd_gui_get_save_icon(), 0);
         }
-        printf("计时器刷新:%s\n", time_str.c_str());
     } else {
-        printf("计时器结束\n");
         for (size_t i = 0; i < 3; i++) {
             delay(200);
             buzzer_play_di(100);

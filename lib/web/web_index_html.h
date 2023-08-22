@@ -1,3 +1,4 @@
+
 /***********************************************************************************************
  * 版权声明：
  * 本源代码的版权归 [saisaiwa] 所有。
@@ -29,12 +30,13 @@ const char HTML_INDEX[] PROGMEM = R"HTML(<!doctype html><html lang="en"><head><m
 <el-card class="box-card"><el-form ref="form" :model="form" label-width="100px" label-position="top"><el-form-item label="G1动画"><el-switch v-model="form.annoOpen"></el-switch></el-form-item>
 <el-form-item label="RGB灯效"><el-switch v-model="form.rgbOpen"></el-switch></el-form-item>
 <el-form-item label="RGB灯效样式" v-if="form.rgbOpen"><el-radio-group v-model="form.rgbStyle"><el-radio :label="1">渐变呼吸</el-radio>
-<el-radio :label="2">彩虹渐变</el-radio></el-radio-group></el-form-item>
+<el-radio :label="2">彩虹渐变</el-radio>
+<el-radio :label="3">恐怖阴森</el-radio></el-radio-group></el-form-item>
 <el-form-item label="RGB亮度" v-if="form.rgbOpen"><el-slider :show-tooltip="false" v-model="form.rgbBrightness" :min="5" :max="255"></el-slider>
 <el-tag effect="dark" type="primary">亮度百分比:
 {{Math.floor(form.rgbBrightness/255*100)}}%</el-tag></el-form-item>
 <el-form-item label="滚动文字"><span slot="label">滚动文字<el-tag effect="plain" style="margin-left: 5px;" size="mini" type="info">英文数字,英文下的标点符号。不支持中文</el-tag></span>
-<el-input maxlength="48" show-word-limit v-model="form.customLongText" placeholder="请输入文字" autosize clearable></el-input><p style="font-size:12px;color:#f56c6c">请勿在滚动模式下修改滚动文字,否则可能会出现错误!</p></el-form-item><el-form-item label="滚动文字帧率(ms)"><el-input v-model="form.customLongTextFrame" placeholder="请输入文字" type="number" clearable></el-input></el-form-item>
+<el-input maxlength="20" show-word-limit v-model="form.customLongText" placeholder="请输入文字" autosize clearable></el-input><p style="font-size:12px;color:#f56c6c">请勿在滚动模式下修改滚动文字,否则可能会出现错误!</p></el-form-item><el-form-item label="滚动文字帧率(ms)"><el-input v-model="form.customLongTextFrame" placeholder="请输入文字" type="number" clearable></el-input></el-form-item>
 <el-form-item label="定时开关机"><el-switch v-model="form.autoPower"></el-switch></el-form-item>
 <el-form-item label="开机时间设定" v-if="form.autoPower"><el-time-picker value-format="HH:mm:ss" clearable v-model="form.autoPowerOpenTime" placeholder="任意时间点"></el-form-item><el-form-item label="关机时间设定" v-if="form.autoPower"><el-time-picker clearable v-model="form.autoPowerCloseTime" value-format="HH:mm:ss" placeholder="任意时间点"></el-time-picker></el-form-item>
 <el-form-item label="开关机生效条件" v-if="form.autoPower"><el-checkbox-group v-model="form.autoPowerEnableDays"><el-checkbox :label="1">周一</el-checkbox>
