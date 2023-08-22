@@ -1,3 +1,9 @@
+/*
+ * @Description: 
+ * @Author: chenzedeng
+ * @Date: 2023-08-22 20:54:11
+ * @LastEditTime: 2023-08-22 22:20:36
+ */
 /***********************************************************************************************
  * 版权声明：
  * 本源代码的版权归 [saisaiwa] 所有。
@@ -23,23 +29,15 @@
  */
 
 #include <Arduino.h>
+#include <NTPClient.h>
 #include <Ticker.h>
+#include <WiFiUdp.h>
 #include <buzzer.h>
-#include <constant.h>
 #include <coredecls.h>
 #include <gui.h>
 #include <rgb.h>
 #include <service.h>
-#include <time.h>
 #include <web_server.h>
-
-#define KEY1 2
-#define KEY2 4
-#define KEY3 5
-
-#define NTP1 "ntp.ntsc.ac.cn"
-#define NTP2 "cn.ntp.org.cn" 
-#define NTP3 "ntp.tuna.tsinghua.edu.cn"
 
 void set_key_listener();
 IRAM_ATTR void handle_key_interrupt();
@@ -54,7 +52,6 @@ void vfd_synchronous();
 void power_handle(u8 state);
 void alarm_handle(u8 state);
 void countdown_handle(u8 state, u8 hour, u8 min, u8 sec);
-void time_is_set(bool from_sntp);
 
 u8 power = 1;       // 电源
 u8 countdounw = 0;  // 是否开启计数器模式
@@ -65,6 +62,8 @@ u8 key_last_pin = 0;     // 记录上一次按下的按键PIN
 
 tm timeinfo;  // 时间对象
 time_t now;
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, NTP3, 8 * 3600, 21600000);  // 6小时更新一次
 String time_str = String();
 u8 mh_state = 0;     // 冒号显示状态
 u8 light_level = 7;  // 亮度等级
@@ -104,8 +103,8 @@ void setup() {
     vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 210, 1);
     vfd_gui_set_text("load.");
 
-    configTime(8 * 3600, 0, NTP1, NTP2, NTP3);
-    settimeofday_cb(time_is_set);
+    timeClient.begin();
+
     getTimeInfo();
     buzzer_play_di();
 }
@@ -147,13 +146,8 @@ void configModeCallback(WiFiManager* myWiFiManager) {
 }
 
 void getTimeInfo() {
-    // if (!getLocalTime(&timeinfo)) {
-    //     if (WiFi.isConnected()) {
-    //         configTime(8 * 3600, 0, NTP1, NTP2, NTP3);
-    //         printf("Date NTC GET SUCCESS!\n");
-    //     }
-    // }
-    time(&now);
+    timeClient.update();
+    now = timeClient.getEpochTime();
     localtime_r(&now, &timeinfo);
 }
 
@@ -250,16 +244,10 @@ void task_led_fun() {
 }
 
 void task_time_refresh_fun() {
-    time_str.clear();
     if (style_page == STYLE_DEFAULT) {
-        // 拼接时间字符串格式： HH:mm:ss
-        time_str += (timeinfo.tm_hour < 10 ? "0" : "");
-        time_str += timeinfo.tm_hour;
-        time_str += (timeinfo.tm_min < 10 ? "0" : "");
-        time_str += timeinfo.tm_min;
-        time_str += (timeinfo.tm_sec < 10 ? "0" : "");
-        time_str += timeinfo.tm_sec;
-        vfd_gui_set_text(time_str.c_str());
+        String timeStr = timeClient.getFormattedTime();
+        timeStr.replace(":", "");
+        vfd_gui_set_text(timeStr.c_str());
         vfd_gui_set_maohao1(mh_state);
         vfd_gui_set_maohao2(mh_state);
         mh_state = !mh_state;
@@ -393,30 +381,4 @@ void countdown_handle(u8 state, u8 hour, u8 min, u8 sec) {
             buzzer_play_di(100);
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-//// 网络校时回调函数与week函数
-//////////////////////////////////////////////////////////////////////////////////
-
-uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
-#ifdef DEBUG
-    printf("调用NTC更新间隔配置时间\n");
-#endif
-    return 12 * 60 * 60 * 1000UL;  // 12 hours
-}
-
-void time_is_set(bool from_sntp) {
-#ifdef DEBUG
-    Serial.print(F("网络校时成功回调"));
-    Serial.println(from_sntp);
-#endif
-}
-
-uint32_t sntp_startup_delay_MS_rfc_not_less_than_60000() {
-#ifdef DEBUG
-    // 1秒就开始校时
-    Serial.println(F("获取Setup校时时间"));
-#endif
-    return 1000;  // 1秒
 }

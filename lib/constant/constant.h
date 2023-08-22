@@ -27,6 +27,12 @@
 // 是否开启debug模式打印日志,不需要请注释掉
 #define DEBUG
 
+//按键PIN脚
+#define KEY1 2
+#define KEY2 4
+#define KEY3 5
+
+
 /**
  * G1动画帧率
  */
@@ -49,4 +55,7 @@
 #define STYLE_CUSTOM_1 1  // 长文字滚动
 #define STYLE_CUSTOM_2 2  // WIFI的IP地址
 
+#define NTP3 "ntp.ntsc.ac.cn"
+// #define NTP2 "cn.ntp.org.cn"
+// #define NTP1 "ntp.tuna.tsinghua.edu.cn"
 #endif
