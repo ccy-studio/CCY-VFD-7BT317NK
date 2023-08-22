@@ -132,6 +132,7 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
         sscanf(save_utime, "%hhd:%hhd:%hhd", &count_hours, &count_minutes,
                &count_seconds);
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
+            memset(save_utime, 0, sizeof(save_utime));
             logic_handler_countdown_stop();
             return;
         }
@@ -142,6 +143,7 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
         // 非首次
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
             // 结束
+            memset(save_utime, 0, sizeof(save_utime));
             logic_handler_countdown_stop();
             callback(0, count_hours, count_minutes, count_seconds);
             return;
