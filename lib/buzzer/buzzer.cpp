@@ -41,7 +41,7 @@ void buzzer_in() {
 
 void buzzer_play_di(u8 time) {
     buzzer_out();
-    tone(BUZZER_PIN, 1000);
+    tone(BUZZER_PIN, 1200);
     delay(time);
     noTone(BUZZER_PIN);
     buzzer_in();

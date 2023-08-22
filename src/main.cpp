@@ -1,8 +1,8 @@
 /*
- * @Description: 
+ * @Description:
  * @Author: chenzedeng
  * @Date: 2023-08-22 20:54:11
- * @LastEditTime: 2023-08-22 22:20:36
+ * @LastEditTime: 2023-08-22 23:25:08
  */
 /***********************************************************************************************
  * 版权声明：
@@ -104,17 +104,20 @@ void setup() {
     vfd_gui_set_text("load.");
 
     timeClient.begin();
-
     getTimeInfo();
+    
     buzzer_play_di();
 }
 
 void loop() {
     getTimeInfo();
     if (power) {
-        web_loop();
-        set_tick();
-        vfd_synchronous();
+        // 如果正在计时这个方法不能执行否则阻塞会导致计时不准
+        if (!countdounw) {
+            web_loop();
+            vfd_synchronous();
+            set_tick();
+        }
         logic_handler_countdown(&timeinfo, countdown_handle);
     }
     // 开关机处理
@@ -259,7 +262,7 @@ void task_time_refresh_fun() {
 }
 
 void set_tick() {
-    if (!countdounw && !task_time_refresh.active()) {
+    if (!task_time_refresh.active()) {
         task_time_refresh.attach_ms(VFD_TIME_FRAME, task_time_refresh_fun);
     }
 
@@ -320,6 +323,8 @@ void power_handle(u8 state) {
         return;
     }
     if (!state) {
+        countdounw = 0;
+        logic_handler_countdown_stop();
         web_stop();
         task_time_refresh.detach();
         task_anno.detach();
@@ -362,6 +367,7 @@ void countdown_handle(u8 state, u8 hour, u8 min, u8 sec) {
     countdounw = state;
     if (countdounw) {
         task_time_refresh.detach();
+        vfd_gui_cancel_long_text();
         time_str.clear();
         // 拼接时间字符串格式： HH:mm:ss
         time_str += (hour < 10 ? "0" : "");

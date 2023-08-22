@@ -26,6 +26,8 @@
 #include <service.h>
 #include <store.h>
 
+static char countdown_save_time[9];
+
 u8 is_number_in_array(const u8* array, size_t array_size, u8 target) {
     for (size_t i = 0; i < array_size; i++) {
         if (array[i] == target) {
@@ -123,16 +125,15 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
     if (strlen(setting_obj.countdown_time) == 0) {
         return;
     }
-    static char save_utime[9];
+
     static u8 s;
     static u8 count_hours, count_minutes, count_seconds;
-
-    if (strcmp(save_utime, setting_obj.countdown_time)) {
-        memcpy(save_utime, setting_obj.countdown_time, sizeof(save_utime));
-        sscanf(save_utime, "%hhd:%hhd:%hhd", &count_hours, &count_minutes,
-               &count_seconds);
+    if (strcmp(countdown_save_time, setting_obj.countdown_time)) {
+        memcpy(countdown_save_time, setting_obj.countdown_time,
+               sizeof(countdown_save_time));
+        sscanf(countdown_save_time, "%hhd:%hhd:%hhd", &count_hours,
+               &count_minutes, &count_seconds);
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
-            memset(save_utime, 0, sizeof(save_utime));
             logic_handler_countdown_stop();
             return;
         }
@@ -143,7 +144,6 @@ void logic_handler_countdown(tm* timeinfo, CountdownCallback callback) {
         // 非首次
         if (count_seconds == 0 && count_minutes == 0 && count_hours == 0) {
             // 结束
-            memset(save_utime, 0, sizeof(save_utime));
             logic_handler_countdown_stop();
             callback(0, count_hours, count_minutes, count_seconds);
             return;
@@ -184,6 +184,7 @@ void logic_handler_countdown_stop() {
     if (!setting_obj.countdown) {
         return;
     }
+    memset(countdown_save_time, 0, sizeof(countdown_save_time));
     memset(setting_obj.countdown_time, 0, sizeof(setting_obj.countdown_time));
     setting_obj.countdown = 0;
     store_save_setting(&setting_obj);
