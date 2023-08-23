@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 11:14:49
- * @LastEditTime: 2023-08-22 20:50:56
+ * @LastEditTime: 2023-08-23 10:06:12
  * 压缩工具： https://www.lddgo.net/string/html-beautify-minify
 -->
 <!DOCTYPE html>
@@ -70,7 +70,7 @@
                         </el-form-item>
 
                         <el-form-item label="RGB亮度" v-if="form.rgbOpen">
-                            <el-slider :show-tooltip="false" v-model="form.rgbBrightness" :min="5"
+                            <el-slider :show-tooltip="false" v-model="form.rgbBrightness" :min="15"
                                 :max="255"></el-slider>
                             <el-tag effect="dark" type="primary">亮度百分比:
                                 {{Math.floor(form.rgbBrightness/255*100)}}%</el-tag>
@@ -82,12 +82,12 @@
                                 滚动文字<el-tag effect="plain" style="margin-left: 5px;" size="mini"
                                     type="info">英文数字,英文下的标点符号。不支持中文</el-tag>
                             </span>
-                            <el-input maxlength="20" show-word-limit v-model="form.customLongText" placeholder="请输入文字"
+                            <el-input maxlength="20" show-word-limit v-model="form.customLongText" placeholder="英文表单符号数字"
                                 autosize clearable></el-input>
                             <p style="font-size: 12px;color: #F56C6C;">请勿在滚动模式下修改滚动文字,否则可能会出现错误!</p>
                         </el-form-item>
                         <el-form-item label="滚动文字帧率(ms)">
-                            <el-input v-model="form.customLongTextFrame" placeholder="请输入文字" type="number"
+                            <el-input @change="customFrameCheckChange" v-model="form.customLongTextFrame" placeholder="输入帧率50~300" type="number"
                                 clearable></el-input>
                         </el-form-item>
                         <el-form-item label="定时开关机">
@@ -228,6 +228,14 @@
                             });
                         }
                     });
+                },
+                customFrameCheckChange(value) {
+                    if (value < 50) {
+                        this.form.customLongTextFrame = 50;
+                    }
+                    if (value > 300) {
+                        this.form.customLongTextFrame = 300;
+                    }
                 }
             }
         })
