@@ -4,6 +4,7 @@
 >  VFD屏幕7-BT-317NK驱动程序，主控ESP8266，驱动IC PT6315
 
 Gitee国内同步仓库: https://gitee.com/Jack-chendeng/CCY-VFD-7BT317NK
+
 Github仓库: https://github.com/ccy-studio/CCY-VFD-7BT317NK
 
 开发环境：Arduino、PlatformIO
