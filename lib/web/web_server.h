@@ -23,6 +23,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
 #include <store.h>
+#include <ota.h>
 
 typedef void (*ConfigModeCallback)(WiFiManager* myWiFiManager);
 typedef void (*ConfigTimeOutCallback)();

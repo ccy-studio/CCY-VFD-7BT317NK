@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-18 11:14:49
- * @LastEditTime: 2023-08-23 10:06:12
+ * @LastEditTime: 2023-08-24 10:42:02
  * 压缩工具： https://www.lddgo.net/string/html-beautify-minify
 -->
 <!DOCTYPE html>
@@ -82,13 +82,13 @@
                                 滚动文字<el-tag effect="plain" style="margin-left: 5px;" size="mini"
                                     type="info">英文数字,英文下的标点符号。不支持中文</el-tag>
                             </span>
-                            <el-input maxlength="20" show-word-limit v-model="form.customLongText" placeholder="英文表单符号数字"
-                                autosize clearable></el-input>
+                            <el-input maxlength="20" show-word-limit v-model="form.customLongText"
+                                placeholder="英文表单符号数字" autosize clearable></el-input>
                             <p style="font-size: 12px;color: #F56C6C;">请勿在滚动模式下修改滚动文字,否则可能会出现错误!</p>
                         </el-form-item>
                         <el-form-item label="滚动文字帧率(ms)">
-                            <el-input @change="customFrameCheckChange" v-model="form.customLongTextFrame" placeholder="输入帧率50~300" type="number"
-                                clearable></el-input>
+                            <el-input @change="customFrameCheckChange" v-model="form.customLongTextFrame"
+                                placeholder="输入帧率50~300" type="number" clearable></el-input>
                         </el-form-item>
                         <el-form-item label="定时开关机">
                             <el-switch v-model="form.autoPower"></el-switch>
@@ -140,6 +140,15 @@
                                 step: '00:00:01',
                                 end: '12:59:59'
                               }" v-model="form.countdownTime" placeholder="时分秒" />
+                        </el-form-item>
+
+                        <el-form-item label="OTA固件升级">
+                            <el-link href="/update" type="primary">跳转到升级页面</el-link>
+                            <p>操作教程:
+                                <el-link target="_blank"
+                                    href="http://www.saisaiwa.com/archives/vfd-clock-userdescription"
+                                    type="info">操作手册</el-link>
+                            </p>
                         </el-form-item>
                     </el-form>
                     <el-button :loading="btnLoading" @click="saveSetting" style="margin-top: 30px;" icon="el-icon-check"

@@ -49,6 +49,7 @@ void countdown_handle(u8 state, u8 hour, u8 min, u8 sec);
 
 u8 power = 1;       // 电源
 u8 countdounw = 0;  // 是否开启计数器模式
+u8 ota_runn = 0;    // OTA升级是否进行？
 
 u32 key_filter_sec = 0;  // 按键防抖
 u32 k1_last_time = 0;    // 按键1的上一次按下触发时间记录
@@ -92,6 +93,7 @@ void setup() {
     store_get_setting(&setting_obj);
 
     web_setup(configModeCallback, configModeTimeoutError);
+    ota_init();
 
     vfd_gui_set_long_text("wifi connected", 210, 1);
     vfd_gui_set_long_text(WiFi.localIP().toString().c_str(), 210, 1);
@@ -99,11 +101,16 @@ void setup() {
 
     timeClient.begin();
     getTimeInfo();
-    
+
     buzzer_play_di();
+
+    printf("OTA\n");
 }
 
 void loop() {
+    if (ota_runn) {
+        return;
+    }
     getTimeInfo();
     if (power) {
         // 如果正在计时这个方法不能执行否则阻塞会导致计时不准

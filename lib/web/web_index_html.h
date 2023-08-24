@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-08-22 13:54:14
- * @LastEditTime: 2023-08-23 10:09:48
+ * @LastEditTime: 2023-08-24 10:43:33
  */
 
 /***********************************************************************************************
@@ -67,7 +67,8 @@ const char HTML_INDEX[] PROGMEM = R"HTML(<!doctype html><html lang="en"><head><m
                                 start: '00:00:01',
                                 step: '00:00:01',
                                 end: '12:59:59'
-                              }" v-model="form.countdownTime" placeholder="时分秒"></el-form-item></el-form><el-button :loading="btnLoading" @click="saveSetting" style="margin-top: 30px;" icon="el-icon-check" type="primary" round>保存修改</el-button></el-card></el-main>
+                              }" v-model="form.countdownTime" placeholder="时分秒"></el-form-item><el-form-item label="OTA固件升级"><el-link href="/update" type="primary">跳转到升级页面</el-link><p>操作教程:
+<el-link target="_blank" href="http://www.saisaiwa.com/archives/vfd-clock-userdescription" type="info">操作手册</el-link></p></el-form-item></el-form><el-button :loading="btnLoading" @click="saveSetting" style="margin-top: 30px;" icon="el-icon-check" type="primary" round>保存修改</el-button></el-card></el-main>
 <el-footer><p class="bq">版权所有 © saisaiwa 2023~2025。保留所有权利。<br>除非获得 saisaiwa 的明确许可，否则不得以任何形式复制、分发或修改本网页内容。<br>免责声明：本网页的内容仅供参考和教育目的。作者不承担由于使用本网页内容而导致的任何直接或间接损失或损害。使用者需自行承担风险。<br>所有第三方商标、标识和名称仅用于说明目的，并可能是其各自所有者的财产。<br>如有任何疑问，请联系:yustart@foxmail.com</p><el-link href="http://saisaiwa.com" type="primary" target="_blank">Create By SAISAIWA</el-link></el-footer></el-container></div><script src="https://unpkg.com/vue@2/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
