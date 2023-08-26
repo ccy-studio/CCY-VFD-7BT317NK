@@ -1,3 +1,4 @@
+
 /***********************************************************************************************
  * 版权声明：
  * 本源代码的版权归 [saisaiwa] 所有。
@@ -25,12 +26,12 @@
 #define __CONSTANT_H
 
 // 是否开启debug模式打印日志,不需要请注释掉
-#define DEBUG
+// #define DEBUG
 
 //按键PIN脚
-#define KEY1 2
+#define KEY1 5
 #define KEY2 4
-#define KEY3 5
+#define KEY3 2
 
 
 /**

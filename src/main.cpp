@@ -103,8 +103,6 @@ void setup() {
     getTimeInfo();
 
     buzzer_play_di();
-
-    printf("OTA\n");
 }
 
 void loop() {
@@ -215,7 +213,7 @@ IRAM_ATTR void handle_key_interrupt() {
         vfd_gui_cancel_long_text();
     } else if (digitalRead(KEY3)) {
         // 高
-        if (digitalRead(KEY1) && digitalRead(KEY2) && key_last_pin == KEY1) {
+        if (digitalRead(KEY1) && digitalRead(KEY2) && key_last_pin == KEY3) {
             u32 sec = (micros() - k1_last_time) / 1000;
             if (k1_last_time != 0 && sec > 2000) {
                 Serial.println("长按操作触发");
