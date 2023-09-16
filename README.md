@@ -41,7 +41,7 @@ doc 文件夹下有所需要的一些资料文件。
 
 ### V3版 - latest
 
-#### future 3.0
+#### release-3.0
 
 - 新增WEB管理端页面
   - 内置WebServer服务，80端口
