@@ -4,7 +4,8 @@
  * 本源代码的版权归 [saisaiwa] 所有。
  *
  * 未经版权所有者明确授权，不得将本代码的任何部分用于商业用途，包括但不限于出售、出租、许可或发布。
- * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系 [yustart@foxmail.com] 进行授权。
+ * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系
+ *[yustart@foxmail.com] 进行授权。
  *
  * 在遵循以下条件的情况下，您可以自由修改、使用和分发本代码：
  * - 您必须保留此版权声明的所有内容。
@@ -25,14 +26,15 @@
 #ifndef __CONSTANT_H
 #define __CONSTANT_H
 
-// 是否开启debug模式打印日志,不需要请注释掉
-// #define DEBUG
+#include <Arduino.h>
 
-//按键PIN脚
+// 是否开启debug模式打印日志,不需要请注释掉
+#define DEBUG
+
+// 按键PIN脚
 #define KEY1 5
 #define KEY2 4
 #define KEY3 2
-
 
 /**
  * G1动画帧率
@@ -59,4 +61,16 @@
 #define NTP3 "ntp.ntsc.ac.cn"
 // #define NTP2 "cn.ntp.org.cn"
 // #define NTP1 "ntp.tuna.tsinghua.edu.cn"
+
+#define EVENT_VFD_OPEN 0x10
+#define EVENT_VFD_CLOSE 0x1f
+#define EVENT_VFD_BRIGHTNESS_DECREASE 0x11
+#define EVENT_VFD_BRIGHTNESS_INCREASE 0x12
+
+#define EVENT_RGB_OPEN 0x20
+#define EVENT_RGB_CLOSE 0x2f
+
+#define EVENT_G1_OPEN 0x30
+#define EVENT_G1_CLOSE 0x3f
+
 #endif

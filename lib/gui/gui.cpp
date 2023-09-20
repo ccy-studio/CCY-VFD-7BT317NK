@@ -23,7 +23,7 @@
 #include "gui.h"
 
 u8 lightOff = 1;    // 背光开关
-u8 lightLevel = 2;  // 亮度级别
+u8 lightLevel = 5;  // 亮度级别
 
 u8 mh1, mh2;  // 冒号1、2
 
