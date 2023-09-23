@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 14:46:13
- * @LastEditTime: 2023-09-20 17:13:46
+ * @LastEditTime: 2023-09-24 00:27:59
  */
 #include "fragment.h"
 
@@ -23,11 +23,12 @@ void handler_vfd_controll(u8 event_id, void* params) {
             vfd_gui_cancel_long_text();
             vfd_gui_stop();
             break;
-        case EVENT_VFD_BRIGHTNESS_INCREASE:
-            vfd_brightness = vfd_brightness + 2 > 7 ? 7 : vfd_brightness + 2;
+        case EVENT_VFD_BRIGHTNESS_INCREASE:  // 亮度加
+            vfd_brightness = vfd_brightness + 3 > 7 ? 7 : vfd_brightness + 3;
+            vfd_gui_set_blk_level(vfd_brightness);
             break;
-        case EVENT_VFD_BRIGHTNESS_DECREASE:
-            vfd_brightness = vfd_brightness - 2 < 1 ? 1 : vfd_brightness - 2;
+        case EVENT_VFD_BRIGHTNESS_DECREASE:  // 亮度减少
+            vfd_brightness = vfd_brightness - 3 < 1 ? 1 : vfd_brightness - 3;
             vfd_gui_set_blk_level(vfd_brightness);
             break;
         default:
@@ -48,11 +49,13 @@ void handler_rgb_controll(u8 event_id) {
     if (event_id == EVENT_RGB_OPEN) {
         if (thread_rgb == NULL) {
             // 创建线程
+            rgb_setup();
             thread_rgb = thread_create(TID_RGB, RGB_ANNO_FRAME, thread_run_rgb);
         }
         thread_start(TID_RGB);
     } else if (event_id == EVENT_RGB_CLOSE) {
         thread_stop(TID_RGB);
+        rgb_clear();
     }
 }
 

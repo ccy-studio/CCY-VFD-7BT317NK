@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-19 17:38:53
- * @LastEditTime: 2023-09-21 10:39:40
+ * @LastEditTime: 2023-09-24 00:03:39
  */
 #include "fragment.h"
 
@@ -94,6 +94,7 @@ void fragment_init() {
     // 蜂鸣器初始化
     buzzer_setup(handle_key_interrupt);
     rx8025t_init(set_key_listener);
+    rx8025_reset();
     // 初始化VFD
     send_global_event(EVENT_VFD_OPEN, NULL);
     for (size_t i = 0; i < PAGE_COUNT; i++) {

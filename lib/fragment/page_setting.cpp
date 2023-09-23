@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:53:27
- * @LastEditTime: 2023-09-21 11:03:53
+ * @LastEditTime: 2023-09-24 00:20:48
  */
 #include "fragment.h"
 
@@ -22,10 +22,10 @@ typedef struct {
 
 static u8 content_type = CONTENT_SET_WIFI;
 
-static setting_content content_arr[4] = {{.title = "WIFI:", .open_state = 0},
-                                         {.title = "RGB:", .open_state = 0},
-                                         {.title = "G1:", .open_state = 0},
-                                         {.title = "CLOCK:", .open_state = 0}};
+static setting_content content_arr[4] = {{"WIFI:"},
+                                         {"RGB:"},
+                                         {"G1:"},
+                                         {"CLOCK:"}};
 static String content_str;
 
 static void click_callback(u8 btn_key, u8 btn_action) {
@@ -79,6 +79,7 @@ static void click_callback(u8 btn_key, u8 btn_action) {
 static void on_create(void* params) {}
 
 static void on_resume(void* params) {
+    vfd_gui_clear();
     // 首次进入更新设置
     content_arr[CONTENT_SET_WIFI].open_state = 0;  // WIFI开关
     content_arr[CONTENT_SET_RGB].open_state = setting_obj.rgb_open;

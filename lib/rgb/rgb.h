@@ -25,7 +25,7 @@
 #define __RGB_H
 
 #include <Arduino.h>
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
 
 #define RGB_LED_PIN 15   // WS2812B PIN
 #define RGB_LED_COUNT 2  // WS2812B 数量

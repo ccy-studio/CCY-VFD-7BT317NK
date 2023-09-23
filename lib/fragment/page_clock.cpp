@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:48:11
- * @LastEditTime: 2023-09-21 10:36:14
+ * @LastEditTime: 2023-09-24 01:26:36
  */
 #include "fragment.h"
 
@@ -15,7 +15,7 @@ u8 time_colon_show = 0;  // 时钟冒号显示状态
 #define CONTENT_DATE 0    // 显示年份
 #define CONTENT_CUSTOM 1  // 显示滚动文字
 #define CONTENT_TIME 2    // 显示时间
-u8 content_type = CONTENT_TIME;
+u8 content_type = CONTENT_TIME; //显示内容Flag
 
 static void click_callback(u8 btn_key, u8 btn_action) {
     switch (btn_action) {
@@ -47,19 +47,19 @@ static void click_callback(u8 btn_key, u8 btn_action) {
 }
 
 void thread_run_clock() {
-    rx8025_read_all(&timeinfo);
-    String str;
-    if (CONTENT_TIME == content_type) {
-        vfd_gui_set_maohao1(time_colon_show);
-        vfd_gui_set_maohao2(time_colon_show);
-        time_colon_show = !time_colon_show;
-        str = formart_time(&timeinfo);
-    } else if (CONTENT_DATE == content_type) {
-        str = formart_date(&timeinfo);
-    } else {
+    if (content_type == CONTENT_CUSTOM) {
         return;
     }
-    vfd_gui_set_text(str.c_str());
+    rx8025_time_get(&timeinfo);
+    String str;
+    if (CONTENT_TIME == content_type) {
+        str = formart_time(&timeinfo);
+        time_colon_show = !time_colon_show;
+    } else if (CONTENT_DATE == content_type) {
+        str = formart_date(&timeinfo);
+        time_colon_show = 0;
+    }
+    vfd_gui_set_text(str.c_str(), time_colon_show);
     vfd_gui_set_icon(ICON_CLOCK, 1);
 }
 
@@ -72,9 +72,9 @@ static void on_resume(void* params) {
 }
 
 static void on_pause(void* params) {
+    thread_stop(TID_CLOCK);
     vfd_gui_cancel_long_text();
     vfd_gui_clear();
-    thread_stop(TID_CLOCK);
 }
 
 static void on_loop(void* params) {

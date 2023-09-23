@@ -3,7 +3,8 @@
  * 本源代码的版权归 [saisaiwa] 所有。
  *
  * 未经版权所有者明确授权，不得将本代码的任何部分用于商业用途，包括但不限于出售、出租、许可或发布。
- * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系 [yustart@foxmail.com] 进行授权。
+ * 仅限个人学习、研究、非盈利性用途下使用。如果您有其他用途的需求，请联系
+ *[yustart@foxmail.com] 进行授权。
  *
  * 在遵循以下条件的情况下，您可以自由修改、使用和分发本代码：
  * - 您必须保留此版权声明的所有内容。
@@ -37,16 +38,8 @@ void vfd_gui_init() {
     ptInitGPIO();
     pinMode(PWM_PIN, OUTPUT);
     // 设置PWM的频率单位hz
-
-    // ------------------------------------
-    // V2V3版本用的频率
     analogWriteFreq(20000);
-    analogWrite(PWM_PIN, 25);
-    // ------------------------------------
-    // V1的频率
-    //  analogWriteFreq(20000);
-    //  analogWrite(PWM_PIN, 15);
-    // ------------------------------------
+    analogWrite(PWM_PIN, 18);
     // VFD Setting
     setDisplayMode(3);  // command1
     vfd_gui_clear();
@@ -102,7 +95,7 @@ u32 vfd_gui_get_save_icon(void) {
     return save_icon;
 }
 
-u8 vfd_gui_set_text(const char* string) {
+u8 vfd_gui_set_text(const char* string, const u8 colon) {
     size_t str_len = strlen(string);
     static u8 data[24];
     memset(data, 0, sizeof(data));
@@ -125,6 +118,10 @@ u8 vfd_gui_set_text(const char* string) {
         mh2 = data[11];
     } else {
         mh2 = 0;
+    }
+    if (colon) {
+        data[5] |= 0x10;
+        data[11] |= 0x10;
     }
     setModeWirteDisplayMode(0);               // command2
     sendDigAndData(3, data, 24);              // command3

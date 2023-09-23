@@ -1,3 +1,9 @@
+/*
+ * @Description: 
+ * @Author: chenzedeng
+ * @Date: 2023-09-23 00:04:37
+ * @LastEditTime: 2023-09-24 00:34:23
+ */
 
 /***********************************************************************************************
  * 版权声明：
@@ -36,27 +42,24 @@
 #define KEY2 4
 #define KEY3 2
 
+#define I2C_SDA 4
+#define I2C_SCL 5
+
 /**
  * G1动画帧率
  */
-#define G1_ANNO_FRAME 190
+#define G1_ANNO_FRAME 150
 
 /**
  * RGB帧率
  */
-#define RGB_ANNO_FRAME 10
+#define RGB_ANNO_FRAME 5
 
 /**
  * VFD时间刷新帧率
  */
 #define VFD_TIME_FRAME 500
 
-/**
- * 显示样式
- */
-#define STYLE_DEFAULT 0   // 默认时间
-#define STYLE_CUSTOM_1 1  // 长文字滚动
-#define STYLE_CUSTOM_2 2  // WIFI的IP地址
 
 #define NTP3 "ntp.ntsc.ac.cn"
 // #define NTP2 "cn.ntp.org.cn"
