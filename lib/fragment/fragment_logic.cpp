@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 14:46:13
- * @LastEditTime: 2023-09-24 00:27:59
+ * @LastEditTime: 2023-09-25 23:00:26
  */
 #include "fragment.h"
 
@@ -18,6 +18,7 @@ void handler_vfd_controll(u8 event_id, void* params) {
     switch (event_id) {
         case EVENT_VFD_OPEN:
             vfd_gui_init();
+            delay(500);
             break;
         case EVENT_VFD_CLOSE:
             vfd_gui_cancel_long_text();
@@ -52,9 +53,9 @@ void handler_rgb_controll(u8 event_id) {
             rgb_setup();
             thread_rgb = thread_create(TID_RGB, RGB_ANNO_FRAME, thread_run_rgb);
         }
-        thread_start(TID_RGB);
+        thread_start_obj(thread_rgb);
     } else if (event_id == EVENT_RGB_CLOSE) {
-        thread_stop(TID_RGB);
+        thread_stop_id(TID_RGB);
         rgb_clear();
     }
 }
@@ -69,11 +70,11 @@ void handelr_g1_anno_controll(u8 event_id) {
     if (event_id == EVENT_G1_OPEN) {
         if (thread_g1 == NULL) {
             // 创建线程
-            thread_rgb = thread_create(TID_G1, G1_ANNO_FRAME, thread_run_g1);
+            thread_g1 = thread_create(TID_G1, G1_ANNO_FRAME, thread_run_g1);
         }
-        thread_start(TID_G1);
+        thread_start_obj(thread_g1);
     } else if (event_id == EVENT_G1_CLOSE) {
-        thread_stop(TID_G1);
+        thread_stop_id(TID_G1);
     }
 }
 

@@ -34,11 +34,13 @@ void thread_destory_byid(u8 id);
 /**
  * 启动线程
  */
-void thread_start(u8 id);
+void thread_start_id(u8 id);
+void thread_start_obj(thread_obj* obj);
 
 /**
  * 停止线程
  */
-void thread_stop(u8 id);
+void thread_stop_id(u8 id);
+void thread_stop_obj(thread_obj* obj);
 
 #endif

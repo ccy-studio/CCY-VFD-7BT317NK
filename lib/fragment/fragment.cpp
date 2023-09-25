@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-19 17:38:53
- * @LastEditTime: 2023-09-25 14:14:00
+ * @LastEditTime: 2023-09-25 23:39:49
  */
 #include "fragment.h"
 
@@ -18,6 +18,8 @@ IRAM_ATTR void handle_key_interrupt();
 ///--------------------KEY-END-----------
 
 fragmen_obj* active_obj;  // 当前激活的Page | 页面
+static u8 replace_page_flag = 0;
+static void* replace_page_param = NULL;
 
 void configuration_check();
 
@@ -26,16 +28,29 @@ void set_key_listener() {
     pinMode(KEY2, INPUT);
     pinMode(KEY3, INPUT);
     // 注册按键中断函数
-    attachInterrupt(digitalPinToInterrupt(KEY1), handle_key_interrupt, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(KEY2), handle_key_interrupt, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(KEY3), handle_key_interrupt, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(KEY1), handle_key_interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(KEY2), handle_key_interrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(KEY3), handle_key_interrupt, FALLING);
+}
+
+/**
+ * 检查双击按键是否满足
+ */
+u8 check_double_press(u32 lasttime) {
+    u32 diff = ((micros() - lasttime) / 1000);
+    if (lasttime != 0 && diff > 50 && diff < 500) {
+        // double click
+        return 1;
+    }
+    return 0;
 }
 
 IRAM_ATTR void handle_key_interrupt() {
     btn_trigger();
     // 按下是低电平
     u32 filter_sec = (micros() - key_filter_sec) / 1000;
-    if (filter_sec < 450) {
+    if (filter_sec < 50) {
+        btn_release();
         return;
     }
     if (digitalRead(KEY3) && !digitalRead(KEY1) && !digitalRead(KEY2)) {
@@ -44,8 +59,7 @@ IRAM_ATTR void handle_key_interrupt() {
     } else if (!digitalRead(KEY1)) {
         key_last_pin = KEY1;
         u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
-        if (key1_last_time != 0 && ((micros() - key1_last_time) / 1000) > 700) {
-            // double click
+        if (check_double_press(key1_last_time)) {
             btn_action = BUTTON_ACTION_DOUBLE_PRESS;
         }
         key1_last_time = micros();
@@ -55,8 +69,7 @@ IRAM_ATTR void handle_key_interrupt() {
     } else if (!digitalRead(KEY2)) {
         key_last_pin = KEY2;
         u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
-        if (key2_last_time != 0 && ((micros() - key2_last_time) / 1000) > 700) {
-            // double click
+        if (check_double_press(key2_last_time)) {
             btn_action = BUTTON_ACTION_DOUBLE_PRESS;
         }
         key2_last_time = micros();
@@ -66,8 +79,7 @@ IRAM_ATTR void handle_key_interrupt() {
     } else if (!digitalRead(KEY3)) {
         key_last_pin = KEY2;
         u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
-        if (key3_last_time != 0 && ((micros() - key3_last_time) / 1000) > 700) {
-            // double click
+        if (check_double_press(key3_last_time)) {
             btn_action = BUTTON_ACTION_DOUBLE_PRESS;
         }
         key3_last_time = micros();
@@ -75,34 +87,8 @@ IRAM_ATTR void handle_key_interrupt() {
         key2_last_time = 0;
         active_obj->btn_callback(KEY3, btn_action);
     }
-    // check long press
-    if (digitalRead(KEY3) && digitalRead(KEY2) && digitalRead(KEY1)) {
-        u32 diff = 0;
-        if (key_last_pin == KEY3) {
-            diff = (micros() - key3_last_time) / 1000;
-            if (key3_last_time && diff > 2000) {
-                active_obj->btn_callback(KEY3, BUTTON_ACTION_PRESS_LONG);
-            } else {
-                active_obj->btn_callback(KEY3, BUTTON_ACTION_PRESS_UP);
-            }
-        } else if (key_last_pin == KEY2) {
-            diff = (micros() - key2_last_time) / 1000;
-            if (key2_last_time && diff > 2000) {
-                active_obj->btn_callback(KEY2, BUTTON_ACTION_PRESS_LONG);
-            } else {
-                active_obj->btn_callback(KEY2, BUTTON_ACTION_PRESS_UP);
-            }
-        } else if (key_last_pin == KEY1) {
-            diff = (micros() - key1_last_time) / 1000;
-            if (key1_last_time && diff > 2000) {
-                active_obj->btn_callback(KEY1, BUTTON_ACTION_PRESS_LONG);
-            } else {
-                active_obj->btn_callback(KEY1, BUTTON_ACTION_PRESS_UP);
-            }
-        }
-        btn_release();
-    }
     key_filter_sec = micros();
+    btn_release();
 }
 
 void fragment_init() {
@@ -124,27 +110,33 @@ void fragment_init() {
 }
 
 void fragment_loop() {
-    configuration_check();
-    if (active_obj != NULL) {
+    if (replace_page_flag) {
+        if (active_obj->fid != replace_page_flag) {
+            for (size_t i = 0; i < PAGE_COUNT; i++) {
+                fragmen_obj obj = fragment_page_arr[i];
+                if (obj.fid == replace_page_flag &&
+                    obj.fid != active_obj->fid) {
+                    active_obj->on_pause(NULL);
+                    active_obj->active = 0;
+                    active_obj = &obj;
+                    active_obj->on_resume(replace_page_param);
+                    active_obj->active = 1;
+                    break;
+                }
+            }
+        }
+        replace_page_flag = 0;
+    }
+
+    if (active_obj != NULL && active_obj->on_loop != NULL) {
         active_obj->on_loop(NULL);
     }
+    configuration_check();
 }
 
 void replace_page(u8 fid, void* params) {
-    if (active_obj->fid == fid) {
-        return;
-    }
-    for (size_t i = 0; i < PAGE_COUNT; i++) {
-        fragmen_obj obj = fragment_page_arr[i];
-        if (obj.fid == fid && obj.fid != active_obj->fid) {
-            active_obj->on_pause(NULL);
-            active_obj->active = 0;
-            active_obj = &obj;
-            active_obj->on_resume(params);
-            active_obj->active = 1;
-            return;
-        }
-    }
+    replace_page_flag = fid;
+    replace_page_param = params;
 }
 
 void handler_vfd_controll(u8 event_id, void* params = NULL);

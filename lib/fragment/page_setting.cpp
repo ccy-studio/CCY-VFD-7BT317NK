@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:53:27
- * @LastEditTime: 2023-09-25 11:38:11
+ * @LastEditTime: 2023-09-25 23:47:24
  */
 #include "fragment.h"
 
@@ -22,21 +22,29 @@ typedef struct {
 
 static u8 content_type = CONTENT_SET_WIFI;
 
-static setting_content content_arr[4] = {{"WIFI:"},
-                                         {"RGB:"},
-                                         {"G1:"},
-                                         {"CLOCK"}};
-static String content_str;
+static setting_content content_arr[4] = {{"WIFI:", 0},
+                                         {"RGB:", 0},
+                                         {"G1:", 0},
+                                         {"CLOCK", 0}};
+static String content_str, cache_str;
 
 static void click_callback(u8 btn_key, u8 btn_action) {
     switch (btn_action) {
         case BUTTON_ACTION_PRESS_DOWN:
             if (btn_key == KEY1) {
                 // 设置切换
-                content_type = content_type <= 0 ? 0 : (content_type - 1) % 4;
+                if (content_type == 0) {
+                    content_type = 3;
+                } else {
+                    content_type--;
+                }
             } else if (btn_key == KEY2) {
                 // 设置切换
-                content_type = (content_type + 1) % 4;
+                if (content_type + 1 >= 4) {
+                    content_type = 0;
+                } else {
+                    content_type++;
+                }
             } else if (btn_key == KEY3) {
                 setting_content obj = content_arr[content_type];
                 switch (content_type) {
@@ -73,10 +81,12 @@ static void click_callback(u8 btn_key, u8 btn_action) {
     }
 }
 
-static void on_create(void* params) {}
+static void on_create(void* params) {
+    content_str = String();
+    cache_str = String();
+}
 
 static void on_resume(void* params) {
-    vfd_gui_clear();
     // 首次进入更新设置
     content_arr[CONTENT_SET_WIFI].open_state = 0;  // WIFI开关
     content_arr[CONTENT_SET_RGB].open_state = setting_obj.rgb_open;
@@ -90,11 +100,18 @@ static void on_pause(void* params) {
 }
 
 static void on_loop(void* params) {
+    delay(500);
     content_str.clear();
     setting_content obj = content_arr[content_type];
     content_str += obj.title;
-    content_type += obj.open_state ? STR_Y : STR_N;
+    content_str += obj.open_state ? STR_Y : STR_N;
+    if (content_str.equals(cache_str)) {
+        return;
+    }
     vfd_gui_set_text(content_str.c_str());
+    cache_str.clear();
+    cache_str.concat(content_str.c_str());
+    // printf("T\n");
 }
 static void on_event(u8 event_id, void* params) {}
 

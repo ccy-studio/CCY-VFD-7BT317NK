@@ -3,26 +3,26 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:48:11
- * @LastEditTime: 2023-09-25 14:41:04
+ * @LastEditTime: 2023-09-25 22:29:11
  */
 #include "fragment.h"
 
 typedef struct {
     u8 id;
     u8 val;
-    u8 min;
-    u8 max;
+    int min;
+    int max;
     char title[4];
 } content_show_obj;
 
-content_show_obj page_obj[6] = {
+static content_show_obj page_obj[6] = {
     {0, 23, 23, 255, "N20"}, {1, 1, 1, 12, "Y:"}, {2, 1, 1, 31, "R:"},
     {3, 0, 0, 24, "H:"},     {4, 0, 0, 59, "M:"}, {5, 0, 0, 59, "S:"},
 };
 
-u8 content_type = 0;  // 显示内容Flag
-String content_buf;
-u8 save_and_back = 0;
+static u8 content_type = 0;  // 显示内容Flag
+static String content_buf;
+static u8 save_and_back = 0;
 
 static void click_callback(u8 btn_key, u8 btn_action) {
     content_show_obj obj = page_obj[content_type];

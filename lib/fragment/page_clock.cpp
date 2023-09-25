@@ -3,18 +3,18 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:48:11
- * @LastEditTime: 2023-09-25 10:12:33
+ * @LastEditTime: 2023-09-25 22:07:21
  */
 #include "fragment.h"
 
 thread_obj* thread_clock;
 
-u8 time_colon_show = 0;  // 时钟冒号显示状态
+static u8 time_colon_show = 0;  // 时钟冒号显示状态
 
-#define CONTENT_DATE 0           // 显示年份
-#define CONTENT_CUSTOM 1         // 显示滚动文字
-#define CONTENT_TIME 2           // 显示时间
-u8 content_type = CONTENT_TIME;  // 显示内容Flag
+#define CONTENT_DATE 0                  // 显示年份
+#define CONTENT_CUSTOM 1                // 显示滚动文字
+#define CONTENT_TIME 2                  // 显示时间
+static u8 content_type = CONTENT_TIME;  // 显示内容Flag
 
 static void click_callback(u8 btn_key, u8 btn_action) {
     switch (btn_action) {
@@ -28,10 +28,15 @@ static void click_callback(u8 btn_key, u8 btn_action) {
             } else if (btn_key == KEY3) {
                 // 切换显示状态
                 vfd_gui_cancel_long_text();
-                content_type = (content_type + 1) % 3;
+                if (content_type + 1 >= 3) {
+                    content_type = 0;
+                } else {
+                    content_type++;
+                }
             }
             break;
         case BUTTON_ACTION_DOUBLE_PRESS:
+            Serial.println("BUTTON_ACTION_DOUBLE_PRESS");
             if (btn_key == KEY3) {
                 // 进入设置页面
                 replace_page(FRAGMENT_PAGE_SETTING);
@@ -65,11 +70,11 @@ static void on_create(void* params) {
 }
 
 static void on_resume(void* params) {
-    thread_start(TID_CLOCK);
+    thread_start_obj(thread_clock);
 }
 
 static void on_pause(void* params) {
-    thread_stop(TID_CLOCK);
+    thread_stop_obj(thread_clock);
     vfd_gui_cancel_long_text();
     vfd_gui_clear();
 }

@@ -46,7 +46,7 @@ thread_obj* thread_create(u8 taskId, u32 ms, fun_thread_run fun) {
     obj->next = NULL;
     obj->run_state = 0;
     obj->fun = fun;
-    obj->ticker.attach_ms(obj->loop_ms, obj->fun);
+    // obj->ticker.attach_ms(obj->loop_ms, obj->fun);
     push_linked_list(obj);
     return obj;
 }
@@ -65,8 +65,14 @@ void thread_destory_byid(u8 id) {
     }
     thread_destory(obj);
 }
+void thread_start_obj(thread_obj* obj) {
+    if (obj != NULL && !obj->ticker.active()) {
+        obj->run_state = 1;
+        obj->ticker.attach_ms(obj->loop_ms, obj->fun);
+    }
+}
 
-void thread_start(u8 id) {
+void thread_start_id(u8 id) {
     thread_obj* obj = find_by_id(id);
     if (obj == NULL || obj->run_state == 1 || obj->ticker.active()) {
         return;
@@ -75,11 +81,18 @@ void thread_start(u8 id) {
     obj->ticker.attach_ms(obj->loop_ms, obj->fun);
 }
 
-void thread_stop(u8 id) {
+void thread_stop_id(u8 id) {
     thread_obj* obj = find_by_id(id);
     if (obj == NULL || obj->run_state == 0 || !obj->ticker.active()) {
         return;
     }
     obj->run_state = 0;
     obj->ticker.detach();
+}
+
+void thread_stop_obj(thread_obj* obj) {
+    if (obj != NULL && obj->ticker.active()) {
+        obj->run_state = 0;
+        obj->ticker.detach();
+    }
 }

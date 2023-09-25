@@ -78,7 +78,7 @@ void vfd_gui_set_one_text(size_t index, char oneChar);
  * 显示一串文字，从0位开始。
  * (自动清空覆盖显示，方便每次不用调用clear防止闪屏出现)
  */
-u8 vfd_gui_set_text(const char* string,const u8 colon = 0);
+u8 vfd_gui_set_text(const char* string, const u8 colon = 0);
 
 /**
  * 要点亮的ICON图标，宏定义传参

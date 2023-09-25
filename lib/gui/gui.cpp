@@ -184,7 +184,7 @@ void vfd_gui_set_long_text(const char* string,
     // 分配内存
     char* buf = (char*)malloc(arr_len * sizeof(char));
     char* zreo_point = buf;
-    char* second_point;
+    char* second_point = NULL;
     if (buf == NULL) {
         printf("分配内存失败");
         return;
@@ -238,13 +238,13 @@ void vfd_gui_set_long_text(const char* string,
             second_point = NULL;
             return;
         }
-        if (vfd_gui_set_text(buf)) {
+        if (vfd_gui_set_text(buf, 0)) {
             delay(delay_ms);
         }
         buf += VFD_DIG_LEN + 1;
     }
     // loop_count大于2的时候开始根据loop_count的数量-2循环到截止.
-    if (loop_count > 2 && second_point) {
+    if (loop_count > 2 && second_point != NULL) {
         for (size_t i = 0; i < loop_count - 2; i++) {
             buf = second_point;
             while (buf && *buf != '\0') {
@@ -255,7 +255,7 @@ void vfd_gui_set_long_text(const char* string,
                     second_point = NULL;
                     return;
                 }
-                if (vfd_gui_set_text(buf)) {
+                if (vfd_gui_set_text(buf, 0)) {
                     delay(delay_ms);
                 }
                 buf += VFD_DIG_LEN + 1;
