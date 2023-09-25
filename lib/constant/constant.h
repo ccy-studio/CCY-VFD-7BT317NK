@@ -2,7 +2,7 @@
  * @Description: 
  * @Author: chenzedeng
  * @Date: 2023-09-23 00:04:37
- * @LastEditTime: 2023-09-24 00:34:23
+ * @LastEditTime: 2023-09-25 10:56:03
  */
 
 /***********************************************************************************************
@@ -60,10 +60,6 @@
  */
 #define VFD_TIME_FRAME 500
 
-
-#define NTP3 "ntp.ntsc.ac.cn"
-// #define NTP2 "cn.ntp.org.cn"
-// #define NTP1 "ntp.tuna.tsinghua.edu.cn"
 
 #define EVENT_VFD_OPEN 0x10
 #define EVENT_VFD_CLOSE 0x1f

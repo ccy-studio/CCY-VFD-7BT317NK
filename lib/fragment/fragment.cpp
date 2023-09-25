@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-19 17:38:53
- * @LastEditTime: 2023-09-24 00:03:39
+ * @LastEditTime: 2023-09-25 14:14:00
  */
 #include "fragment.h"
 
@@ -32,9 +32,10 @@ void set_key_listener() {
 }
 
 IRAM_ATTR void handle_key_interrupt() {
+    btn_trigger();
     // 按下是低电平
     u32 filter_sec = (micros() - key_filter_sec) / 1000;
-    if (filter_sec < 500) {
+    if (filter_sec < 450) {
         return;
     }
     if (digitalRead(KEY3) && !digitalRead(KEY1) && !digitalRead(KEY2)) {
@@ -42,22 +43,37 @@ IRAM_ATTR void handle_key_interrupt() {
         active_obj->btn_callback(KEY1 | KEY2, BUTTON_ACTION_PRESS_DOWN);
     } else if (!digitalRead(KEY1)) {
         key_last_pin = KEY1;
+        u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
+        if (key1_last_time != 0 && ((micros() - key1_last_time) / 1000) > 700) {
+            // double click
+            btn_action = BUTTON_ACTION_DOUBLE_PRESS;
+        }
         key1_last_time = micros();
         key2_last_time = 0;
         key3_last_time = 0;
-        active_obj->btn_callback(KEY1, BUTTON_ACTION_PRESS_DOWN);
+        active_obj->btn_callback(KEY1, btn_action);
     } else if (!digitalRead(KEY2)) {
         key_last_pin = KEY2;
+        u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
+        if (key2_last_time != 0 && ((micros() - key2_last_time) / 1000) > 700) {
+            // double click
+            btn_action = BUTTON_ACTION_DOUBLE_PRESS;
+        }
         key2_last_time = micros();
         key1_last_time = 0;
         key3_last_time = 0;
-        active_obj->btn_callback(KEY2, BUTTON_ACTION_PRESS_DOWN);
+        active_obj->btn_callback(KEY2, btn_action);
     } else if (!digitalRead(KEY3)) {
         key_last_pin = KEY2;
+        u8 btn_action = BUTTON_ACTION_PRESS_DOWN;
+        if (key3_last_time != 0 && ((micros() - key3_last_time) / 1000) > 700) {
+            // double click
+            btn_action = BUTTON_ACTION_DOUBLE_PRESS;
+        }
         key3_last_time = micros();
         key1_last_time = 0;
         key2_last_time = 0;
-        active_obj->btn_callback(KEY3, BUTTON_ACTION_PRESS_DOWN);
+        active_obj->btn_callback(KEY3, btn_action);
     }
     // check long press
     if (digitalRead(KEY3) && digitalRead(KEY2) && digitalRead(KEY1)) {
@@ -84,6 +100,7 @@ IRAM_ATTR void handle_key_interrupt() {
                 active_obj->btn_callback(KEY1, BUTTON_ACTION_PRESS_UP);
             }
         }
+        btn_release();
     }
     key_filter_sec = micros();
 }

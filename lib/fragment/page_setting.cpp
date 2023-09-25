@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:53:27
- * @LastEditTime: 2023-09-24 00:20:48
+ * @LastEditTime: 2023-09-25 11:38:11
  */
 #include "fragment.h"
 
@@ -25,7 +25,7 @@ static u8 content_type = CONTENT_SET_WIFI;
 static setting_content content_arr[4] = {{"WIFI:"},
                                          {"RGB:"},
                                          {"G1:"},
-                                         {"CLOCK:"}};
+                                         {"CLOCK"}};
 static String content_str;
 
 static void click_callback(u8 btn_key, u8 btn_action) {
@@ -55,17 +55,14 @@ static void click_callback(u8 btn_key, u8 btn_action) {
                         store_save_setting(&setting_obj);
                         break;
                     case CONTENT_SET_CLOCK:
-                        printf("CLOCK\n");
+                        replace_page(FRAGMENT_PAGE_CLOCK_SET);
                         break;
                     default:
                         break;
                 }
             }
             break;
-        case BUTTON_ACTION_PRESS_UP:
-            /* code */
-            break;
-        case BUTTON_ACTION_PRESS_LONG:
+        case BUTTON_ACTION_DOUBLE_PRESS:
             if (btn_key == KEY3) {
                 // 退出设置
                 replace_page(FRAGMENT_PAGE_CLOCK);
