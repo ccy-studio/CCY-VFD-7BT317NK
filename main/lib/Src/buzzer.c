@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 15:48:25
- * @LastEditTime: 2023-10-08 17:57:05
+ * @LastEditTime: 2023-10-08 18:03:53
  */
 #include "buzzer.h"
 #include "driver/ledc.h"
@@ -34,5 +34,8 @@ void buzzer_bind(fun_key_action fun) {
 void buzzer_fast_play(u8 duration) {
     key_func(0);
     // action pwm
+    ledc_channel_config(&ledc_buzzer_channel);
+    delay_ms(1000);
+    ledc_stop(ledc_buzzer_channel.speed_mode, ledc_buzzer_channel.channel, 0);
     key_func(1);
 }
