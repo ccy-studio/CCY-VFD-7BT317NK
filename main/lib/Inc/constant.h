@@ -31,7 +31,7 @@
 #define delay_ms(ms) vTaskDelay(ms / portTICK_RATE_MS)
 #define delay_us(us) ets_delay_us(us)
 
-static const char* TAG = "application";
+static const char *TAG = "application";
 #define CHECK_LOGE(x, msg, ...)                \
     do {                                       \
         esp_err_t __;                          \
@@ -47,11 +47,15 @@ static const char* TAG = "application";
             return ESP_ERR_INVALID_ARG; \
     } while (0)
 
-#define PIN_INIT_NONE_OUTOUT(pin)                  \
+#define PIN_INIT_NONE_OUTPUT(pin)                  \
     do {                                           \
-        gpio_set_direction(pin, GPIO_MODE_OUTPUT); \
-        gpio_pullup_dis(pin);                      \
-        gpio_pullup_dis(pin);                      \
+       gpio_config_t gpio;\
+gpio.mode = GPIO_MODE_OUTPUT;\
+gpio.pull_down_en = 0;\
+gpio.pull_down_en = 0;\
+gpio.intr_type = GPIO_INTR_DISABLE;\
+gpio.pin_bit_mask = IO_MASK(pin);\
+gpio_config(&gpio);\
     } while (0)
 
 typedef void (*fun_key_action)(u8 start);

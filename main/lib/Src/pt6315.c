@@ -1,9 +1,13 @@
 #include "pt6315.h"
 
 void ptInitGPIO(void) {
-    PIN_INIT_NONE_OUTOUT(CLK_PIN);
-    PIN_INIT_NONE_OUTOUT(DIN_PIN);
-    PIN_INIT_NONE_OUTOUT(STB_PIN);
+    gpio_config_t gpio;
+    gpio.mode = GPIO_MODE_OUTPUT;
+    gpio.pull_down_en = 0;
+    gpio.pull_down_en = 0;
+    gpio.intr_type = GPIO_INTR_DISABLE;
+    gpio.pin_bit_mask = IO_MASK(CLK_PIN) | IO_MASK(DIN_PIN) | IO_MASK(STB_PIN);
+    gpio_config(&gpio);
 }
 
 void writeData(uint8_t data) {
@@ -95,7 +99,7 @@ void ptSetDisplayLight(uint8_t onOff, uint8_t brightnessVal) {
     STB_1;
 }
 
-void sendDigAndData(uint8_t dig, const uint8_t* data, size_t len) {
+void sendDigAndData(uint8_t dig, const uint8_t *data, size_t len) {
     STB_1;
     delay_us(10);
     STB_0;

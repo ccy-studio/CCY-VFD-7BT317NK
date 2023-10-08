@@ -10,22 +10,23 @@ u8 mh1, mh2;  // 冒号1、2
 u32 current_icon_flag = 0;
 u32 save_icon = 0;
 static u8 long_cancel_flag = 0;
-static uint32_t duties[1] = {1400};
+static uint32_t duties[1] = {4};
 static const uint32_t pins[1] = {PWM_PIN};
 
 void vfd_gui_init() {
     // 初始化GPIO
     ptInitGPIO();
 
-    pwm_init(20000, duties, 2, pins);
+    pwm_init(48, duties, 1, pins);
+    pwm_set_phase(0, 180);
     pwm_start();
     // VFD Setting
-    setDisplayMode(3);  // command1
+    setDisplayMode(3);
     vfd_gui_clear();
 }
 
 void vfd_gui_start() {
-    pwm_set_duty(2, duties[0]);
+    pwm_set_duty(0, duties[0]);
     pwm_start();
 }
 
@@ -34,7 +35,7 @@ void vfd_gui_stop() {
     current_icon_flag = 0;
     mh1 = 0;
     mh2 = 0;
-    pwm_set_duty(2, 0);
+    pwm_set_duty(0, 0);
     pwm_start();
 }
 
@@ -80,7 +81,7 @@ u32 vfd_gui_get_save_icon(void) {
     return save_icon;
 }
 
-u8 vfd_gui_set_text(const char* string, const u8 colon) {
+u8 vfd_gui_set_text(const char *string, const u8 colon) {
     size_t str_len = strlen(string);
     static u8 data[24];
     memset(data, 0, sizeof(data));
@@ -135,6 +136,7 @@ void vfd_gui_set_maohao1(u8 open) {
     u8 command = open ? mh1 | 0x10 : mh1;
     vfd_set_maohao(0x08, command);
 }
+
 void vfd_gui_set_maohao2(u8 open) {
     u8 command = open ? mh2 | 0x10 : mh2;
     vfd_set_maohao(0x0E, command);
@@ -146,7 +148,7 @@ void vfd_gui_set_maohao2(u8 open) {
  * @param delay_us_ms 循环展示刷新频率单位 Ms
  * @param loop_count 循环播放的次数
  **/
-void vfd_gui_set_long_text(const char* string,
+void vfd_gui_set_long_text(const char *string,
                            u32 delay_us_ms,
                            size_t loop_count) {
     long_cancel_flag = 0;
@@ -167,9 +169,9 @@ void vfd_gui_set_long_text(const char* string,
     pageSize += loop_count > 1 ? (str_len + VFD_DIG_LEN) : 0;
     arr_len = pageSize * (VFD_DIG_LEN + 1);  //+1是没每一页末尾添加\0
     // 分配内存
-    char* buf = (char*)malloc(arr_len * sizeof(char));
-    char* zreo_point = buf;
-    char* second_point = NULL;
+    char *buf = (char *) malloc(arr_len * sizeof(char));
+    char *zreo_point = buf;
+    char *second_point = NULL;
     if (buf == NULL) {
         printf("分配内存失败");
         return;
@@ -262,9 +264,9 @@ void vfd_gui_set_long_text(const char* string,
 void vfd_gui_anno_for_g1() {
     static size_t anno_frame = 0;
     static const u32 anno_arr[] = {
-        ICON_G1_STYLE_4, ICON_G1_STYLE_5, ICON_G1_STYLE_6,
-        ICON_G1_STYLE_1, ICON_G1_STYLE_2, ICON_G1_STYLE_3,
-        ICON_G1_STYLE_7, ICON_G1_STYLE_8, ICON_G1_STYLE_9};
+            ICON_G1_STYLE_4, ICON_G1_STYLE_5, ICON_G1_STYLE_6,
+            ICON_G1_STYLE_1, ICON_G1_STYLE_2, ICON_G1_STYLE_3,
+            ICON_G1_STYLE_7, ICON_G1_STYLE_8, ICON_G1_STYLE_9};
     anno_frame++;
     if (anno_frame >= 9) {
         anno_frame = 0;
