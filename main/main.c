@@ -3,10 +3,11 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 09:56:12
- * @LastEditTime: 2023-10-08 17:58:53
+ * @LastEditTime: 2023-10-09 17:10:45
  */
 #include "gui.h"
 #include "driver/uart.h"
+#include "ws2812b.h"
 
 void app_main() {
     //设置Uart 115200
