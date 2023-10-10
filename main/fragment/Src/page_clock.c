@@ -21,11 +21,11 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
         case BUTTON_PRESSED:
             if (btn_key == KEY1) {
                 // 亮度减
-                xEventGroupSetBits(fragment_envent_handle,
+                xEventGroupSetBits(fragment_event_handle,
                                    EVENT_VFD_BRIGHTNESS_DECREASE);
             } else if (btn_key == KEY2) {
                 // 亮度加
-                xEventGroupSetBits(fragment_envent_handle,
+                xEventGroupSetBits(fragment_event_handle,
                                    EVENT_VFD_BRIGHTNESS_INCREASE);
             } else if (btn_key == KEY3) {
                 // 切换显示状态
@@ -37,8 +37,8 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                 }
             }
             break;
-        case BUTTON_CLICKED:
-            printf("BUTTON_ACTION_DOUBLE_PRESS");
+        case BUTTON_PRESSED_LONG:
+            ESP_LOGI(APP_TAG,"BUTTON_PRESSED_LONG长按\n");
             if (btn_key == KEY3) {
                 // 进入设置页面
                 replace_page(FRAGMENT_PAGE_SETTING, NULL);
@@ -68,7 +68,7 @@ static void on_loop(void* params) {
             time_colon_show = !time_colon_show;
         } else if (CONTENT_DATE == content_type) {
             formart_date(&timeinfo, vfd_content_buf, sizeof(vfd_content_buf));
-            time_colon_show = 0;
+            time_colon_show = 1;
         }
         vfd_gui_set_text(vfd_content_buf, time_colon_show);
         vfd_gui_set_icon(ICON_CLOCK, 1);

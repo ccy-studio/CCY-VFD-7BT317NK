@@ -8,46 +8,50 @@
 #include "fragment.h"
 
 extern fragmen_obj fragment_page_arr[PAGE_COUNT];
+
 void fragment_bind();
+
 ///--------------------KEY-Start-----------
 static button_t btn_key1;
 static button_t btn_key2;
 static button_t btn_key3;
-void handle_key_callback(button_t* btn, button_state_t state);
+
+void handle_key_callback(button_t *btn, button_state_t state);
 ///--------------------KEY-END-----------
 
-EventGroupHandle_t fragment_envent_handle = NULL;
+EventGroupHandle_t fragment_event_handle = NULL;
 
-fragmen_obj* active_obj;  // 当前激活的Page | 页面
+fragmen_obj *active_obj;  // 当前激活的Page | 页面
 static u8 replace_page_flag = 0;
-static void* replace_page_param = NULL;
+static void *replace_page_param = NULL;
 
-void fragment_servicce_init();
+void fragment_service_init();
 
 void set_key_listener() {
     btn_key1.gpio = KEY1;
     btn_key1.internal_pull = false;
     btn_key1.pressed_level = 0;
-    btn_key1.autorepeat = true;
+    btn_key1.autorepeat = false;
     btn_key1.callback = handle_key_callback;
     button_init(&btn_key1);
 
     btn_key2.gpio = KEY2;
     btn_key2.internal_pull = false;
     btn_key2.pressed_level = 0;
-    btn_key2.autorepeat = true;
+    btn_key2.autorepeat = false;
     btn_key2.callback = handle_key_callback;
     button_init(&btn_key2);
 
     btn_key3.gpio = KEY3;
     btn_key3.internal_pull = false;
     btn_key3.pressed_level = 0;
-    btn_key3.autorepeat = true;
+    btn_key3.autorepeat = false;
     btn_key3.callback = handle_key_callback;
     button_init(&btn_key3);
 }
 
-void handle_key_callback(button_t* btn, button_state_t state) {
+void handle_key_callback(button_t *btn, button_state_t state) {
+    ESP_LOGI(APP_TAG, "Key:%d action: %d\n", btn->gpio, state);
     if (active_obj != NULL) {
         active_obj->btn_callback(btn->gpio, state);
     }
@@ -77,8 +81,8 @@ void rx8025_key_handle(u8 state) {
 
 void fragment_init() {
     fragment_bind();
-    fragment_envent_handle = xEventGroupCreate();
-    if (NULL == fragment_envent_handle) {
+    fragment_event_handle = xEventGroupCreate();
+    if (NULL == fragment_event_handle) {
         ESP_LOGE(APP_TAG, "事件创建失败!");
         return;
     }
@@ -87,12 +91,12 @@ void fragment_init() {
     rbg_init();
     rx8025t_init(rx8025_key_handle);
     rx8025_reset();
-    fragment_servicce_init();
+    fragment_service_init();
     // 按键初始化
     set_key_listener();
     delay_ms(500);
     // 初始化VFD
-    xEventGroupSetBits(fragment_envent_handle, EVENT_VFD_OPEN);
+    xEventGroupSetBits(fragment_event_handle, EVENT_VFD_OPEN);
     for (size_t i = 0; i < PAGE_COUNT; i++) {
         fragmen_obj obj = fragment_page_arr[i];
         obj.on_create(NULL);
@@ -126,7 +130,7 @@ void fragment_loop() {
     }
 }
 
-void replace_page(u8 fid, void* params) {
+void replace_page(u8 fid, void *params) {
     replace_page_flag = fid;
     replace_page_param = params;
 }

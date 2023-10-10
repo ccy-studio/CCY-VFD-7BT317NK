@@ -18,10 +18,10 @@ rx8025_timeinfo timeinfo;
  */
 void handler_vfd_controll() {
     EventBits_t r_event = xEventGroupWaitBits(
-        fragment_envent_handle,
-        EVENT_VFD_OPEN | EVENT_VFD_CLOSE | EVENT_VFD_BRIGHTNESS_INCREASE |
+            fragment_event_handle,
+            EVENT_VFD_OPEN | EVENT_VFD_CLOSE | EVENT_VFD_BRIGHTNESS_INCREASE |
             EVENT_VFD_BRIGHTNESS_DECREASE,
-        pdTRUE, pdFALSE, 0);
+            pdTRUE, pdFALSE, 0);
 
     static u8 vfd_brightness = 7;
     switch (r_event) {
@@ -48,7 +48,7 @@ void handler_vfd_controll() {
 /**
  * RGB执行线程
  */
-void thread_run_rgb(void* params) {
+void thread_run_rgb(void *params) {
     while (1) {
         rgb_fun_set_style(setting_obj.rgb_style);
         rgb_fun_set_brightness(setting_obj.rgb_brightness);
@@ -57,7 +57,7 @@ void thread_run_rgb(void* params) {
     }
 }
 
-void handler_rgb_controll(u8 event_id) {
+void handler_rgb_control(u8 event_id) {
     if (event_id == EVENT_RGB_OPEN) {
         if (task_rgb == NULL) {
             // 创建线程
@@ -75,13 +75,14 @@ void handler_rgb_controll(u8 event_id) {
 /**
  * G1动画执行线程
  */
-void thread_run_g1(void* params) {
+void thread_run_g1(void *params) {
     while (1) {
         vfd_gui_anno_for_g1();
-        delay_ms(RGB_ANNO_FRAME);
+        delay_ms(G1_ANNO_FRAME);
     }
 }
-void handelr_g1_anno_controll(u8 event_id) {
+
+void handle_g1_event(u8 event_id) {
     if (event_id == EVENT_G1_OPEN) {
         if (task_g1 == NULL) {
             // 创建线程
@@ -100,26 +101,26 @@ void handelr_g1_anno_controll(u8 event_id) {
  */
 static void configuration_check() {
     if (setting_obj.rgb_open) {
-        handler_rgb_controll(EVENT_RGB_OPEN);
+        handler_rgb_control(EVENT_RGB_OPEN);
     } else {
-        handler_rgb_controll(EVENT_RGB_CLOSE);
+        handler_rgb_control(EVENT_RGB_CLOSE);
     }
 
     if (setting_obj.anno_open) {
-        handelr_g1_anno_controll(EVENT_G1_OPEN);
+        handle_g1_event(EVENT_G1_OPEN);
     } else {
-        handelr_g1_anno_controll(EVENT_G1_CLOSE);
+        handle_g1_event(EVENT_G1_CLOSE);
     }
 }
 
-static void rx8025_update_fun(void* params) {
+static void rx8025_update_fun(void *params) {
     while (1) {
         rx8025_time_get(&timeinfo);
         delay_ms(500);
     }
 }
 
-static void service_task_fun(void* params) {
+static void service_task_fun(void *params) {
     while (1) {
         configuration_check();  // 检查Store参数的变化
         handler_vfd_controll();
@@ -127,7 +128,7 @@ static void service_task_fun(void* params) {
     }
 }
 
-void fragment_servicce_init() {
+void fragment_service_init() {
     xTaskCreate(service_task_fun, "FS", 2048, NULL, 1, NULL);
     xTaskCreate(rx8025_update_fun, "TIME", 1024, NULL, 2, &task_rx8025);
 }

@@ -44,7 +44,7 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                 }
             }
             break;
-        case BUTTON_CLICKED:
+        case BUTTON_PRESSED_LONG:
             if (btn_key == KEY3) {
                 save_and_back = 1;
             }

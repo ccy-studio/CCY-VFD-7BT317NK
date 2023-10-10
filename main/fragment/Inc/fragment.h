@@ -55,7 +55,7 @@ typedef struct {
     fun_active_on_loop on_loop;
 } fragmen_obj;
 
-extern EventGroupHandle_t fragment_envent_handle;
+extern EventGroupHandle_t fragment_event_handle;
 extern rx8025_timeinfo timeinfo;
 
 void fragment_init();

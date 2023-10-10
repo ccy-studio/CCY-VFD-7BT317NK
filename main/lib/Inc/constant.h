@@ -29,7 +29,7 @@
 #define u32 uint32_t
 
 #define IO_MASK(pin) 1ULL << pin
-#define delay_ms(ms) vTaskDelay(ms / portTICK_RATE_MS)
+#define delay_ms(ms) vTaskDelay(pdMS_TO_TICKS(ms))
 #define delay_us(us) ets_delay_us(us)
 
 #define APP_TAG "application"
@@ -72,12 +72,12 @@ typedef void (*fun_key_action)(u8 start);
 /**
  * G1动画帧率
  */
-#define G1_ANNO_FRAME 150
+#define G1_ANNO_FRAME 120
 
 /**
  * RGB帧率
  */
-#define RGB_ANNO_FRAME 5
+#define RGB_ANNO_FRAME 10
 
 /**
  * VFD时间刷新帧率

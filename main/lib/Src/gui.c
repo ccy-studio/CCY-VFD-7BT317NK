@@ -60,10 +60,10 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
 }
 
 void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
-    if (current_icon_flag == buf) {
-        // 过滤重复提交
-        return;
-    }
+//    if (current_icon_flag == buf) {
+//        // 过滤重复提交
+//        return;
+//    }
     uint8_t arr[3];
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;
@@ -145,11 +145,11 @@ void vfd_gui_set_maohao2(u8 open) {
 /**
  * 循环滚动展示所有文字,可显示任意长字符内容
  * @param string 要展示的内容字符串
- * @param delay_us_ms 循环展示刷新频率单位 Ms
+ * @param delay_ms 循环展示刷新频率单位 Ms
  * @param loop_count 循环播放的次数
  **/
 void vfd_gui_set_long_text(const char *string,
-                           u32 delay_us_ms,
+                           u32 delay_ms,
                            size_t loop_count) {
     long_cancel_flag = 0;
     // 刷新的页码数
@@ -226,7 +226,7 @@ void vfd_gui_set_long_text(const char *string,
             return;
         }
         if (vfd_gui_set_text(buf, 0)) {
-            delay_us(delay_us_ms);
+            delay_ms(delay_ms);
         }
         buf += VFD_DIG_LEN + 1;
     }
@@ -243,7 +243,7 @@ void vfd_gui_set_long_text(const char *string,
                     return;
                 }
                 if (vfd_gui_set_text(buf, 0)) {
-                    delay_us(delay_us_ms);
+                    delay_ms(delay_ms);
                 }
                 buf += VFD_DIG_LEN + 1;
             }
