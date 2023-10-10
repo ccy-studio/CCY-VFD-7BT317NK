@@ -3,10 +3,10 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-09 17:18:28
- * @LastEditTime: 2023-10-09 17:58:31
+ * @LastEditTime: 2023-10-10 16:48:57
  */
-#include <esp8266/gpio_struct.h>
 #include "ws2812b.h"
+#include <esp8266/gpio_struct.h>
 
 typedef struct {
     u8 r;
@@ -18,28 +18,27 @@ rgb_cache cache_arr[RGB_LED_COUNT];
 
 static u8 buf_arr[RGB_LED_COUNT * 3];
 
-
 void reset() {
     gpio_set_level(RGB_PIN, 0);
     delay_ms(100);
 }
 
 void pin_low() {
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
 }
 
 void pin_high() {
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1ts |= (0x1 << RGB_PIN);  // 1
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
+    GPIO.out_w1tc |= (0x1 << RGB_PIN);  // 0
 }
 
 void send_arr(u8 buf) {
@@ -54,11 +53,11 @@ void send_arr(u8 buf) {
     }
 }
 
-//void send_grb(u8 g, u8 r, u8 b) {
-//    send_arr(g);
-//    send_arr(r);
-//    send_arr(b);
-//}
+// void send_grb(u8 g, u8 r, u8 b) {
+//     send_arr(g);
+//     send_arr(r);
+//     send_arr(b);
+// }
 
 void rbg_init() {
     PIN_INIT_NONE_OUTPUT(RGB_PIN);
@@ -66,7 +65,7 @@ void rbg_init() {
 
 void rgb_set_color(u8 index, u8 r, u8 g, u8 b) {
     if (index >= RGB_LED_COUNT) {
-        ESP_LOGE(TAG, "错误不能超过最大LED数量限制!");
+        ESP_LOGE(APP_TAG, "错误不能超过最大LED数量限制!");
         return;
     }
     cache_arr[index].r = r;
@@ -89,20 +88,26 @@ void rgb_update() {
     }
     reset();
 
-    //高187ns 低 250ns
-    //t0h400ns t0l850ns
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-//
-//    //t1h800ns t1l450ns
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-//    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    // 高187ns 低 250ns
+    // t0h400ns t0l850ns
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    //
+    //    //t1h800ns t1l450ns
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
 }
+
+void rgb_clear() {}
+
+void rgb_fun_anno_update() {}
+void rgb_fun_set_style(u8 style) {}
+void rgb_fun_set_brightness(u8 brightness) {}

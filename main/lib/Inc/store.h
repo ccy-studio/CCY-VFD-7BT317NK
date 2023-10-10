@@ -1,9 +1,9 @@
 /*
- * @Description: 
+ * @Description:
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 10:07:21
- * @LastEditTime: 2023-10-08 10:07:38
+ * @LastEditTime: 2023-10-10 16:22:53
  */
 
 #ifndef __STORE_H
@@ -12,13 +12,13 @@
 #include <constant.h>
 
 typedef struct {
-    u8 anno_open = 1;         // G1动画开关
-    u8 rgb_open = 1;          // RGB灯效开关
-    u8 rgb_style = 2;         // RGB灯效样式 RGB_STYLE_2
-    u8 rgb_brightness = 128;  // RGB亮度
+    u8 anno_open;       // G1动画开关
+    u8 rgb_open;        // RGB灯效开关
+    u8 rgb_style;       // RGB灯效样式 RGB_STYLE_2
+    u8 rgb_brightness;  // RGB亮度
 
-    char custom_long_text[50] = {"Hello VFD"};  // 滚动文字
-    u8 custom_long_text_frame = 255;            // 滚动文字帧率
+    char custom_long_text[50];  // 滚动文字
+    u8 custom_long_text_frame;  // 滚动文字帧率
 
     u8 auto_power;                  // 定时开关机开关
     char auto_power_open_time[9];   // 开机时间设定

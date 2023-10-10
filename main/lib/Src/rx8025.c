@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-04 10:53:37
- * @LastEditTime: 2023-10-08 15:29:32
+ * @LastEditTime: 2023-10-10 15:12:47
  */
 #include <rx8025.h>
 
@@ -16,7 +16,7 @@
 #define SCL_1 gpio_set_level(I2C_SCL, 1)
 #define SCL_0 gpio_set_level(I2C_SCL, 0)
 
-rx8025_read_done_fun done_fun;
+static fun_key_action key_func;
 
 void i2c_sda_out() {
     gpio_set_direction(I2C_SDA, GPIO_MODE_OUTPUT_OD);
@@ -176,18 +176,19 @@ void rx8025_write(u8 address, u8* buf, u8 len) {
     i2c_stop();
 }
 
-void rx8025t_init(rx8025_read_done_fun fun) {
-    done_fun = fun;
+void rx8025t_init(fun_key_action fun) {
+    key_func = fun;
     i2c_init();
 }
 
 void rx8025_reset() {
+    key_func(1);
     i2c_init();
     u8 command[2];
     command[0] = 0x00;
     command[1] = 0x40;
     rx8025_write(0xe0, command, 2);
-    done_fun();
+    key_func(0);
 }
 
 u8 toBcd(u8 val) {
@@ -205,6 +206,7 @@ void rx8025_set_time(u8 year,
                      u8 hour,
                      u8 min,
                      u8 sec) {
+    key_func(1);
     i2c_init();
     u8 command[7];
     command[0] = toBcd(sec);
@@ -215,10 +217,11 @@ void rx8025_set_time(u8 year,
     command[5] = toBcd(month);
     command[6] = toBcd(year);
     rx8025_write(0x00, command, 7);
-    done_fun();
+    key_func(0);
 }
 
 void rx8025_time_get(rx8025_timeinfo* timeinfo) {
+    key_func(1);
     i2c_init();
     u8 buf[7];
     rx8025_read(0x00, buf, 7);
@@ -229,7 +232,7 @@ void rx8025_time_get(rx8025_timeinfo* timeinfo) {
     timeinfo->day = toDec(buf[4]);
     timeinfo->month = toDec(buf[5]);
     timeinfo->year = toDec(buf[6]);
-    done_fun();
+    key_func(0);
 }
 
 void formart_time(rx8025_timeinfo* timeinfo, char* buf, size_t buf_size) {

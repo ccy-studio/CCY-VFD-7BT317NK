@@ -32,10 +32,10 @@ void buzzer_bind(fun_key_action fun) {
     CHECK_LOGE(ledc_timer_config(&ledc_buzzer_timer), "ledc配置错误");
 }
 void buzzer_fast_play(u8 duration) {
-    key_func(0);
+    key_func(1);
     // action pwm
     ledc_channel_config(&ledc_buzzer_channel);
     delay_ms(1000);
     ledc_stop(ledc_buzzer_channel.speed_mode, ledc_buzzer_channel.channel, 0);
-    key_func(1);
+    key_func(0);
 }
