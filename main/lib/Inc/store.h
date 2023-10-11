@@ -39,7 +39,7 @@ void store_init();
 
 void store_close();
 
-void store_save_setting(store_setting_obj* obj);
+void store_save_setting(store_setting_obj obj);
 
 void store_get_setting(store_setting_obj* obj);
 

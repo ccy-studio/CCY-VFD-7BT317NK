@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-20 11:53:27
- * @LastEditTime: 2023-10-10 16:44:45
+ * @LastEditTime: 2023-10-11 10:52:48
  */
 #include "fragment.h"
 
@@ -55,12 +55,12 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                     case CONTENT_SET_RGB:
                         obj.open_state = !obj.open_state;
                         setting_obj.rgb_open = obj.open_state;
-                        store_save_setting(&setting_obj);
+                        store_save_setting(setting_obj);
                         break;
                     case CONTENT_SET_G1:
                         obj.open_state = !obj.open_state;
                         setting_obj.anno_open = obj.open_state;
-                        store_save_setting(&setting_obj);
+                        store_save_setting(setting_obj);
                         break;
                     case CONTENT_SET_CLOCK:
                         replace_page(FRAGMENT_PAGE_CLOCK_SET, NULL);

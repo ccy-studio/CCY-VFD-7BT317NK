@@ -162,5 +162,5 @@ void logic_handler_countdown_stop() {
     memset(countdown_save_time, 0, sizeof(countdown_save_time));
     memset(setting_obj.countdown_time, 0, sizeof(setting_obj.countdown_time));
     setting_obj.countdown = 0;
-    store_save_setting(&setting_obj);
+    store_save_setting(setting_obj);
 }
