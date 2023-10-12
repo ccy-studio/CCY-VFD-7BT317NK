@@ -10,7 +10,7 @@
 
 store_setting_obj setting_obj = {.anno_open = 1,
                                  .rgb_open = 1,
-                                 .rgb_style = 2,
+                                 .rgb_style = 0,
                                  .rgb_brightness = 128,
                                  .custom_long_text = {"Hello VFD"},
                                  .custom_long_text_frame = 255};

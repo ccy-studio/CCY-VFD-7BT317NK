@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-19 17:38:53
- * @LastEditTime: 2023-10-10 17:44:53
+ * @LastEditTime: 2023-10-12 15:25:18
  */
 #include "fragment.h"
 
@@ -15,45 +15,40 @@ void fragment_bind();
 static button_t btn_key1;
 static button_t btn_key2;
 static button_t btn_key3;
+static button_t btn_receive;
 
-void handle_key_callback(button_t *btn, button_state_t state);
+void handle_key_callback(void* params);
 ///--------------------KEY-END-----------
 
 EventGroupHandle_t fragment_event_handle = NULL;
 
-fragmen_obj *active_obj;  // 当前激活的Page | 页面
+fragmen_obj* active_obj;  // 当前激活的Page | 页面
 static u8 replace_page_flag = 0;
-static void *replace_page_param = NULL;
+static void* replace_page_param = NULL;
 
 void fragment_service_init();
 
 void set_key_listener() {
     btn_key1.gpio = KEY1;
-    btn_key1.internal_pull = false;
-    btn_key1.pressed_level = 0;
-    btn_key1.autorepeat = false;
-    btn_key1.callback = handle_key_callback;
     button_init(&btn_key1);
 
     btn_key2.gpio = KEY2;
-    btn_key2.internal_pull = false;
-    btn_key2.pressed_level = 0;
-    btn_key2.autorepeat = false;
-    btn_key2.callback = handle_key_callback;
     button_init(&btn_key2);
 
     btn_key3.gpio = KEY3;
-    btn_key3.internal_pull = false;
-    btn_key3.pressed_level = 0;
-    btn_key3.autorepeat = false;
-    btn_key3.callback = handle_key_callback;
     button_init(&btn_key3);
 }
 
-void handle_key_callback(button_t *btn, button_state_t state) {
-    ESP_LOGI(APP_TAG, "Key:%d action: %d\n", btn->gpio, state);
-    if (active_obj != NULL) {
-        active_obj->btn_callback(btn->gpio, state);
+void handle_key_callback(void* params) {
+    while (1) {
+        if (xQueueReceive(btn_queue, &btn_receive, 0) == pdTRUE) {
+            ESP_LOGI(APP_TAG, "Key:%d action: %d\n", btn_receive.gpio,
+                     btn_receive.state);
+            if (active_obj != NULL) {
+                active_obj->btn_callback(btn_receive.gpio, btn_receive.state);
+            }
+        }
+        delay_ms(1);
     }
 }
 
@@ -94,6 +89,8 @@ void fragment_init() {
     fragment_service_init();
     // 按键初始化
     set_key_listener();
+    button_init();
+    xTaskCreate(handle_key_callback, "btnCALL", 4096, NULL, 2, NULL);
     delay_ms(500);
     // 初始化VFD
     xEventGroupSetBits(fragment_event_handle, EVENT_VFD_OPEN);
@@ -130,7 +127,7 @@ void fragment_loop() {
     }
 }
 
-void replace_page(u8 fid, void *params) {
+void replace_page(u8 fid, void* params) {
     replace_page_flag = fid;
     replace_page_param = params;
 }

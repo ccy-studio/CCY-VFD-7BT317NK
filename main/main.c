@@ -19,10 +19,10 @@ void app_main() {
     store_get_setting(&setting_obj);
     store_print_debug(setting_obj);
 
-    // fragment_init();
+    fragment_init();
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
         delay_ms(1);
-        // fragment_loop();
+        fragment_loop();
     }
 }
