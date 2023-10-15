@@ -8,34 +8,43 @@
 #include <store.h>
 #include "nvs_flash.h"
 
-store_setting_obj setting_obj = {.anno_open = 1,
-                                 .rgb_open = 1,
-                                 .rgb_style = 0,
-                                 .rgb_brightness = 128,
-                                 .custom_long_text = {"Hello VFD"},
-                                 .custom_long_text_frame = 255};
 
 #define MY_PARTITION "mnvs"
 #define MY_TABLE "setting_db"
 
+store_setting_obj glob_setting_config;
+
+void store_read_setting();
+
 void store_init() {
     nvs_flash_init_partition(MY_PARTITION);
+    glob_setting_config.anno_open = 1;
+    glob_setting_config.rgb_open = 1;
+    glob_setting_config.rgb_style = 0;
+    glob_setting_config.rgb_brightness = 1;
+    memcpy(glob_setting_config.custom_long_text, "Hello VFD", 9);
+    glob_setting_config.custom_long_text_frame = 255;
+    store_read_setting();
 }
 
 void store_close() {
     nvs_flash_deinit_partition(MY_PARTITION);
 }
 
-void store_save_setting(store_setting_obj obj) {
+store_setting_obj *get_store() {
+    return &glob_setting_config;
+}
+
+void store_save_setting() {
     nvs_handle my_nvs_handle;
     ESP_ERROR_CHECK(nvs_open_from_partition(MY_PARTITION, MY_TABLE,
                                             NVS_READWRITE, &my_nvs_handle));
-    nvs_set_blob(my_nvs_handle, "obj", &obj, sizeof(obj));
+    nvs_set_blob(my_nvs_handle, "obj", &glob_setting_config, sizeof(glob_setting_config));
     nvs_commit(my_nvs_handle);
     nvs_close(my_nvs_handle);
 }
 
-void store_get_setting(store_setting_obj* obj) {
+void store_read_setting() {
     nvs_handle my_nvs_handle;
     if (nvs_open_from_partition(MY_PARTITION, MY_TABLE, NVS_READONLY,
                                 &my_nvs_handle) != ESP_OK) {
@@ -47,7 +56,7 @@ void store_get_setting(store_setting_obj* obj) {
         ESP_LOGI(APP_TAG, "nvs read settting_db len fail\n");
         return;
     }
-    state = nvs_get_blob(my_nvs_handle, "obj", obj, &size);
+    state = nvs_get_blob(my_nvs_handle, "obj", &glob_setting_config, &size);
     if (state != ESP_OK) {
         ESP_LOGI(APP_TAG, "nvs read settting_db fail\n");
         return;
@@ -59,34 +68,36 @@ void store_del_setting(void) {
 }
 
 #ifdef DEBUG
-void store_print_debug(store_setting_obj setting_obj) {
+
+void store_print_debug() {
     printf("\n输出结果:\n");
-    printf("anno_open: %d\n", setting_obj.anno_open);
-    printf("rgb_open: %d\n", setting_obj.rgb_open);
-    printf("rgb_style: %d\n", setting_obj.rgb_style);
-    printf("rgb_brightness: %d\n", setting_obj.rgb_brightness);
-    printf("custom_long_text: %s\n", setting_obj.custom_long_text);
-    printf("custom_long_text_frame: %d\n", setting_obj.custom_long_text_frame);
-    printf("auto_power: %d\n", setting_obj.auto_power);
-    printf("auto_power_open_time: %s\n", setting_obj.auto_power_open_time);
-    printf("auto_power_close_time: %s\n", setting_obj.auto_power_close_time);
+    printf("anno_open: %d\n", glob_setting_config.anno_open);
+    printf("rgb_open: %d\n", glob_setting_config.rgb_open);
+    printf("rgb_style: %d\n", glob_setting_config.rgb_style);
+    printf("rgb_brightness: %d\n", glob_setting_config.rgb_brightness);
+    printf("custom_long_text: %s\n", glob_setting_config.custom_long_text);
+    printf("custom_long_text_frame: %d\n", glob_setting_config.custom_long_text_frame);
+    printf("auto_power: %d\n", glob_setting_config.auto_power);
+    printf("auto_power_open_time: %s\n", glob_setting_config.auto_power_open_time);
+    printf("auto_power_close_time: %s\n", glob_setting_config.auto_power_close_time);
 
     printf("auto_power_enable_days: ");
     for (int i = 0; i < 7; i++) {
-        printf("%d ", setting_obj.auto_power_enable_days[i]);
+        printf("%d ", glob_setting_config.auto_power_enable_days[i]);
     }
     printf("\n");
 
-    printf("alarm_clock: %d\n", setting_obj.alarm_clock);
-    printf("alarm_clock_time: %s\n", setting_obj.alarm_clock_time);
+    printf("alarm_clock: %d\n", glob_setting_config.alarm_clock);
+    printf("alarm_clock_time: %s\n", glob_setting_config.alarm_clock_time);
 
     printf("alarm_clock_enable_days: ");
     for (int i = 0; i < 7; i++) {
-        printf("%d ", setting_obj.alarm_clock_enable_days[i]);
+        printf("%d ", glob_setting_config.alarm_clock_enable_days[i]);
     }
     printf("\n");
 
-    printf("countdown: %d\n", setting_obj.countdown);
-    printf("countdown_time: %s\n", setting_obj.countdown_time);
+    printf("countdown: %d\n", glob_setting_config.countdown);
+    printf("countdown_time: %s\n", glob_setting_config.countdown_time);
 }
+
 #endif

@@ -10,6 +10,10 @@
 
 #include "constant.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RGB_PIN 15
 #define RGB_LED_COUNT 2  // WS2812B 数量
 
@@ -17,7 +21,7 @@
 #define RGB_STYLE_2 1
 #define RGB_STYLE_3 2
 
-void rbg_init();
+void rgb_init();
 
 void rgb_set_color(u8 index, u8 r, u8 g, u8 b);
 
@@ -29,4 +33,7 @@ void rgb_fun_anno_update();
 void rgb_fun_set_style(u8 style);
 void rgb_fun_set_brightness(u8 brightness);
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
 #endif

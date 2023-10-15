@@ -33,20 +33,22 @@ typedef struct {
     char countdown_time[9];  // 倒计时时间
 } store_setting_obj;
 
-extern store_setting_obj setting_obj;
+extern store_setting_obj glob_setting_config;
 
 void store_init();
 
 void store_close();
 
-void store_save_setting(store_setting_obj obj);
+void store_save_setting();
 
-void store_get_setting(store_setting_obj* obj);
+store_setting_obj *get_store();
 
 void store_del_setting(void);
 
 #ifdef DEBUG
-void store_print_debug(store_setting_obj setting_obj);
+
+void store_print_debug();
+
 #endif
 
 #endif

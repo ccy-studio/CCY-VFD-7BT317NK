@@ -60,10 +60,10 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
 }
 
 void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
-//    if (current_icon_flag == buf) {
-//        // 过滤重复提交
-//        return;
-//    }
+    if (current_icon_flag == buf) {
+        // 过滤重复提交
+        return;
+    }
     uint8_t arr[3];
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;
@@ -272,7 +272,7 @@ void vfd_gui_anno_for_g1() {
         anno_frame = 0;
     }
     u32 anno = anno_arr[anno_frame];
-    vfd_gui_set_icon(anno | current_icon_flag, 0);
+    vfd_gui_set_icon(anno | save_icon, 0);
 }
 
 void vfd_gui_cancel_long_text() {

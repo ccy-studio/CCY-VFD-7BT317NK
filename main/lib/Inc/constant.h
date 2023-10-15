@@ -72,7 +72,7 @@ typedef void (*fun_key_action)(u8 start);
 /**
  * G1动画帧率
  */
-#define G1_ANNO_FRAME 120
+#define G1_ANNO_FRAME 150
 
 /**
  * RGB帧率

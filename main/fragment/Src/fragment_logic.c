@@ -16,7 +16,7 @@ rx8025_timeinfo timeinfo;
 /**
  * VFD操作 0x1?
  */
-void handler_vfd_controll() {
+void handler_vfd_control() {
     EventBits_t r_event = xEventGroupWaitBits(
             fragment_event_handle,
             EVENT_VFD_OPEN | EVENT_VFD_CLOSE | EVENT_VFD_BRIGHTNESS_INCREASE |
@@ -49,9 +49,15 @@ void handler_vfd_controll() {
  * RGB执行线程
  */
 void thread_run_rgb(void *params) {
+    store_setting_obj *obj = get_store();
     while (1) {
-        rgb_fun_set_style(setting_obj.rgb_style);
-        rgb_fun_set_brightness(setting_obj.rgb_brightness);
+        if (!obj->rgb_open) {
+            rgb_fun_set_brightness(0);
+            rgb_clear();
+            return;
+        }
+        rgb_fun_set_style(obj->rgb_style);
+        rgb_fun_set_brightness(obj->rgb_brightness);
         rgb_fun_anno_update();
         delay_ms(RGB_ANNO_FRAME);
     }
@@ -65,10 +71,10 @@ void handler_rgb_control(u8 event_id) {
         }
     } else if (event_id == EVENT_RGB_CLOSE) {
         if (task_rgb != NULL) {
-            vTaskDelete(&task_rgb);
+            vTaskDelete(task_rgb);
             task_rgb = NULL;
+            rgb_clear();
         }
-        rgb_clear();
     }
 }
 
@@ -90,8 +96,10 @@ void handle_g1_event(u8 event_id) {
         }
     } else if (event_id == EVENT_G1_CLOSE) {
         if (task_g1 != NULL) {
-            vTaskDelete(&task_g1);
+            vTaskDelete(task_g1);
             task_g1 = NULL;
+            delay_ms(50);
+            vfd_gui_set_icon(ICON_NONE, 0);
         }
     }
 }
@@ -100,13 +108,14 @@ void handle_g1_event(u8 event_id) {
  * 实时参数检查
  */
 static void configuration_check() {
-    if (setting_obj.rgb_open) {
+    store_setting_obj *obj = get_store();
+    if (obj->rgb_open) {
         handler_rgb_control(EVENT_RGB_OPEN);
     } else {
         handler_rgb_control(EVENT_RGB_CLOSE);
     }
 
-    if (setting_obj.anno_open) {
+    if (obj->anno_open) {
         handle_g1_event(EVENT_G1_OPEN);
     } else {
         handle_g1_event(EVENT_G1_CLOSE);
@@ -123,7 +132,7 @@ static void rx8025_update_fun(void *params) {
 static void service_task_fun(void *params) {
     while (1) {
         configuration_check();  // 检查Store参数的变化
-        handler_vfd_controll();
+        handler_vfd_control();
         delay_ms(1);
     }
 }

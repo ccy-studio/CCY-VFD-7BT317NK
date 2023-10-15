@@ -19,9 +19,9 @@
 /**
  * 页面ID常量
  */
-#define FRAGMENT_PAGE_SETTING 0x10
-#define FRAGMENT_PAGE_CLOCK 0x00
-#define FRAGMENT_PAGE_CLOCK_SET 0x01
+#define FRAGMENT_PAGE_SETTING 3
+#define FRAGMENT_PAGE_CLOCK 2
+#define FRAGMENT_PAGE_CLOCK_SET 1
 
 #define PAGE_COUNT 3 //页面数量
 
@@ -40,10 +40,14 @@
 #define EVENT_G1_CLOSE BIT(7)
 
 typedef void (*fun_button_click_callback)(u8 btn_key, button_state_t btn_action);
-typedef void (*fun_active_on_resume)(void* params);
-typedef void (*fun_active_on_pause)(void* params);
-typedef void (*fun_active_on_loop)(void* params);
-typedef void (*fun_active_on_create)(void* params);
+
+typedef void (*fun_active_on_resume)(void *params);
+
+typedef void (*fun_active_on_pause)(void *params);
+
+typedef void (*fun_active_on_loop)(void *params);
+
+typedef void (*fun_active_on_create)(void *params);
 
 typedef struct {
     u8 fid;  // 页面标识ID
@@ -59,7 +63,9 @@ extern EventGroupHandle_t fragment_event_handle;
 extern rx8025_timeinfo timeinfo;
 
 void fragment_init();
+
 void fragment_loop();
-void replace_page(u8 fid, void* params);
+
+void replace_page(u8 fid, void *params);
 
 #endif

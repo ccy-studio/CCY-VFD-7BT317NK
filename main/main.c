@@ -16,13 +16,12 @@ void app_main() {
     uart_set_baudrate(UART_NUM_0, 115200);
     printf("RunStarting...\n");
     store_init();
-    store_get_setting(&setting_obj);
-    store_print_debug(setting_obj);
-
+    store_print_debug();
     fragment_init();
+
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
-        delay_ms(1);
+        vTaskDelay(1);
         fragment_loop();
     }
 }
