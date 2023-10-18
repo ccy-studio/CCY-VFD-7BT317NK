@@ -8,7 +8,6 @@
 #include <store.h>
 #include "nvs_flash.h"
 
-
 #define MY_PARTITION "mnvs"
 #define MY_TABLE "setting_db"
 
@@ -31,7 +30,7 @@ void store_close() {
     nvs_flash_deinit_partition(MY_PARTITION);
 }
 
-store_setting_obj *get_store() {
+store_setting_obj* get_store() {
     return &glob_setting_config;
 }
 
@@ -39,7 +38,8 @@ void store_save_setting() {
     nvs_handle my_nvs_handle;
     ESP_ERROR_CHECK(nvs_open_from_partition(MY_PARTITION, MY_TABLE,
                                             NVS_READWRITE, &my_nvs_handle));
-    nvs_set_blob(my_nvs_handle, "obj", &glob_setting_config, sizeof(glob_setting_config));
+    nvs_set_blob(my_nvs_handle, "obj", &glob_setting_config,
+                 sizeof(glob_setting_config));
     nvs_commit(my_nvs_handle);
     nvs_close(my_nvs_handle);
 }
@@ -54,13 +54,16 @@ void store_read_setting() {
     esp_err_t state = nvs_get_blob(my_nvs_handle, "obj", NULL, &size);
     if (state != ESP_OK) {
         ESP_LOGI(APP_TAG, "nvs read settting_db len fail\n");
+        nvs_close(my_nvs_handle);
         return;
     }
     state = nvs_get_blob(my_nvs_handle, "obj", &glob_setting_config, &size);
     if (state != ESP_OK) {
         ESP_LOGI(APP_TAG, "nvs read settting_db fail\n");
+        nvs_close(my_nvs_handle);
         return;
     }
+    nvs_close(my_nvs_handle);
 }
 
 void store_del_setting(void) {
@@ -76,10 +79,13 @@ void store_print_debug() {
     printf("rgb_style: %d\n", glob_setting_config.rgb_style);
     printf("rgb_brightness: %d\n", glob_setting_config.rgb_brightness);
     printf("custom_long_text: %s\n", glob_setting_config.custom_long_text);
-    printf("custom_long_text_frame: %d\n", glob_setting_config.custom_long_text_frame);
+    printf("custom_long_text_frame: %d\n",
+           glob_setting_config.custom_long_text_frame);
     printf("auto_power: %d\n", glob_setting_config.auto_power);
-    printf("auto_power_open_time: %s\n", glob_setting_config.auto_power_open_time);
-    printf("auto_power_close_time: %s\n", glob_setting_config.auto_power_close_time);
+    printf("auto_power_open_time: %s\n",
+           glob_setting_config.auto_power_open_time);
+    printf("auto_power_close_time: %s\n",
+           glob_setting_config.auto_power_close_time);
 
     printf("auto_power_enable_days: ");
     for (int i = 0; i < 7; i++) {

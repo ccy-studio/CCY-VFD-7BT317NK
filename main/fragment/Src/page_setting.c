@@ -56,6 +56,9 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                 switch (content_type) {
                     case CONTENT_SET_WIFI:
                         printf("WIFI\n");
+                        if(wifi_get_connect_state() == WIFI_UNCONNECT){
+                            wifi_connect();
+                        }
                         break;
                     case CONTENT_SET_RGB:
                         glob_setting_config.rgb_open = obj->open_state;

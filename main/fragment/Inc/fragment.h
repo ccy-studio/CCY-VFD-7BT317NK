@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-09-19 17:38:33
- * @LastEditTime: 2023-10-10 16:24:39
+ * @LastEditTime: 2023-10-18 15:26:39
  */
 #ifndef __FRAGMENT_H
 #define __FRAGMENT_H
@@ -15,6 +15,7 @@
 #include "rx8025.h"
 #include "store.h"
 #include "button.h"
+#include "smart_wifi.h"
 
 /**
  * 页面ID常量

@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 09:56:12
- * @LastEditTime: 2023-10-11 11:29:41
+ * @LastEditTime: 2023-10-18 17:56:58
  */
 #include "fragment.h"
 #include "driver/uart.h"
@@ -17,11 +17,15 @@ void app_main() {
     printf("RunStarting...\n");
     store_init();
     store_print_debug();
-    fragment_init();
+    // fragment_init();
+
+    wifi_connect();
 
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
-        vTaskDelay(1);
-        fragment_loop();
+        // vTaskDelay(1);
+        // fragment_loop();
+        delay_ms(1000);
+        // printf("wifi state:%d\n", wifi_get_connect_state());
     }
 }

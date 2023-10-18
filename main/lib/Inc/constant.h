@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 10:04:30
- * @LastEditTime: 2023-10-10 16:55:35
+ * @LastEditTime: 2023-10-18 11:50:19
  */
 
 #ifndef __CONSTANT_H
@@ -20,6 +20,8 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
+#include "esp_system.h"
+#include "stdbool.h"
 
 // 是否开启debug模式打印日志,不需要请注释掉
 #define DEBUG

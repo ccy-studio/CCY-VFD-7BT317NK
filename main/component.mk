@@ -5,3 +5,6 @@
 
 COMPONENT_SRCDIRS += lib/Src fragment/Src
 COMPONENT_ADD_INCLUDEDIRS += lib/Inc/ fragment/Inc/
+
+
+COMPONENT_EMBED_TXTFILES := index.html
