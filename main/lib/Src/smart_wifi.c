@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-18 11:43:09
- * @LastEditTime: 2023-10-18 17:56:01
+ * @LastEditTime: 2023-10-19 17:55:58
  */
 #include "smart_wifi.h"
 #include "my_http_server.h"
@@ -35,6 +35,8 @@ static void event_handler(void* arg,
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT &&
                event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        // 停止Http后台服务
+        http_stop();
         retry_count++;
         if (retry_count > WIFI_RETRY_MAX) {
             // 超过最大重试次数
@@ -49,11 +51,11 @@ static void event_handler(void* arg,
         ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
         memset(ip, 0, sizeof(ip));
         memcpy(ip, ip4addr_ntoa(&event->ip_info.ip), sizeof(ip));
-        ESP_LOGI(APP_TAG, "Get ip:%s\n", ip);
+        ESP_LOGI(APP_TAG, "Get ip:[%s]\n", ip);
         retry_count = 0;
         current_wifi_state = WIFI_CONNECTED;
         xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
-        //Test
+        // 开启Http后台服务
         http_start();
     } else if (event_base == SC_EVENT && event_id == SC_EVENT_SCAN_DONE) {
         ESP_LOGI(APP_TAG, "Scan done");
@@ -203,6 +205,7 @@ void wifi_unconnect(void) {
         esp_smartconfig_stop();
         task_thread = NULL;
     }
+    http_stop();
     esp_wifi_disconnect();
     esp_wifi_deinit();
     current_wifi_state = WIFI_UNCONNECT;

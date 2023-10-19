@@ -18,7 +18,7 @@ typedef struct {
     u8 rgb_brightness;  // RGB亮度
 
     char custom_long_text[50];  // 滚动文字
-    u8 custom_long_text_frame;  // 滚动文字帧率
+    u32 custom_long_text_frame;  // 滚动文字帧率
 
     u8 auto_power;                  // 定时开关机开关
     char auto_power_open_time[9];   // 开机时间设定
