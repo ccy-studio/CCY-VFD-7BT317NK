@@ -3,15 +3,12 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-09 17:18:28
- * @LastEditTime: 2023-10-12 16:09:41
+ * @LastEditTime: 2023-10-20 16:22:58
  */
 #include "ws2812b.h"
 #include "color.h"
+#include "driver/spi.h"
 #include "rgb.h"
-#include "stdbool.h"
-#include <esp8266/eagle_soc.h>
-#include <esp_attr.h>
-#include <esp8266/gpio_register.h>
 
 typedef struct {
     u8 r;
@@ -20,56 +17,31 @@ typedef struct {
 } rgb_cache;
 
 volatile rgb_cache cache_arr[RGB_LED_COUNT];
-
 static u8 buf_arr[RGB_LED_COUNT * 3];
 static volatile u8 brightness_val, curr_style;
 
-IRAM_ATTR void espShow(
-        uint8_t pin, uint8_t *pixels, uint32_t numBytes);
-
-void reset() {
-    gpio_set_level(RGB_PIN, 0);
-    delay_ms(350);
-}
-
-//
-//void pin_low() {
-//    //0码：高220~380 低580~1.6us
-////    GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, IO_MASK(RGB_PIN)); // 1
-////    delay_300ns();
-////    GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, IO_MASK(RGB_PIN)); //0
-////    delay_1090ns();
-//
-//
-//}
-//
-//void pin_high() {
-//    GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, IO_MASK(RGB_PIN)); // 1
-//    delay_1090ns();
-//    GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, IO_MASK(RGB_PIN)); //0
-//    delay_300ns();
-//}
-
-void send_arr(u8 buf) {
-//    uint8_t i;
-//    for (i = 8; i > 0; i--) {
-//        if (buf & 0x80) {
-//            pin_high();
-//        } else {
-//            pin_low();
-//        }
-//        buf <<= 1;
-//    }
-}
-
-// void send_grb(u8 g, u8 r, u8 b) {
-//     send_arr(g);
-//     send_arr(r);
-//     send_arr(b);
-// }
-
 void rgb_init() {
-    PIN_INIT_NONE_OUTPUT(RGB_PIN);
+    spi_config_t spi_config;
+    // Load default interface parameters
+    // CS_EN:1, MISO_EN:1, MOSI_EN:1, BYTE_TX_ORDER:1, BYTE_TX_ORDER:1,
+    // BIT_RX_ORDER:0, BIT_TX_ORDER:0, CPHA:0, CPOL:0
+    spi_config.interface.val = SPI_DEFAULT_INTERFACE;
+    // Load default interrupt enable
+    // TRANS_DONE: true, WRITE_STATUS: false, READ_STATUS: false, WRITE_BUFFER:
+    // false, READ_BUFFER: false
+    spi_config.intr_enable.val = SPI_MASTER_DEFAULT_INTR_ENABLE;
+    spi_config.interface.cs_en = 0;
+    spi_config.interface.miso_en = 0;
+    // CPOL: 1, CPHA: 1
+    spi_config.interface.cpol = 1;
+    spi_config.interface.cpha = 1;
+    // Set SPI to master mode
+    // 8266 Only support half-duplex
+    spi_config.mode = SPI_MASTER_MODE;
+    // Set the SPI clock frequency division factor
+    spi_config.clk_div = SPI_8MHz_DIV;
+    spi_config.event_cb = NULL;
+    spi_init(HSPI_HOST, &spi_config);
 }
 
 void rgb_set_color(u8 index, u8 r, u8 g, u8 b) {
@@ -82,6 +54,29 @@ void rgb_set_color(u8 index, u8 r, u8 g, u8 b) {
     cache_arr[index].b = b;
 }
 
+static send_buf_spi() {
+    u32 len = RGB_LED_COUNT * 3;
+    u32 blen = len * 8;
+    u8 buf[blen];
+    u32 pi = 0;
+    for (size_t i = 0; i < len; i++) {
+        u8 data = buf_arr[i];
+        for (u8 j = 0; j < 8; j++) {
+            if (data & 0x80) {
+                buf[pi++] = 0xFC; /*11111100b;*/
+            } else {
+                buf[pi++] = 0XC0; /*11000000b;*/
+            }
+            data <<= 1;
+        }
+    }
+    uint32_t* spi_buf = (uint32_t*)buf;
+    spi_trans_t trans = {0};
+    trans.mosi = spi_buf;
+    trans.bits.mosi = blen * 8;
+    spi_trans(HSPI_HOST, &trans);
+}
+
 void rgb_update() {
     memset(buf_arr, 0, sizeof(buf_arr));
     u32 bi = 0;
@@ -91,37 +86,14 @@ void rgb_update() {
         rgb.b = cache.b;
         rgb.r = cache.r;
         rgb.g = cache.g;
-        rgb.r = (uint8_t) (((uint16_t) rgb.r * brightness_val) / 255);
-        rgb.g = (uint8_t) (((uint16_t) rgb.g * brightness_val) / 255);
-        rgb.b = (uint8_t) (((uint16_t) rgb.b * brightness_val) / 255);
+        rgb.r = (uint8_t)(((uint16_t)rgb.r * brightness_val) / 255);
+        rgb.g = (uint8_t)(((uint16_t)rgb.g * brightness_val) / 255);
+        rgb.b = (uint8_t)(((uint16_t)rgb.b * brightness_val) / 255);
         buf_arr[bi++] = rgb.g;
         buf_arr[bi++] = rgb.r;
         buf_arr[bi++] = rgb.b;
     }
-//    ws2812_write(RGB_PIN, &buf_arr, sizeof(buf_arr));
-    espShow(RGB_PIN, &buf_arr[0], sizeof(buf_arr));
-//    for (size_t i = 0; i < bi; i++) {
-//        u8 data = buf_arr[i];
-//        send_arr(data);
-//    }
-    reset();
-
-    // 高187ns 低 250ns
-    // t0h400ns t0l850ns
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    //
-    //    //t1h800ns t1l450ns
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1ts |= (0x1 << RGB_PIN); //1
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
-    //    GPIO.out_w1tc |= (0x1 << RGB_PIN);//0
+    send_buf_spi();
 }
 
 void rgb_clear() {
@@ -133,21 +105,20 @@ void rgb_clear() {
         cache.b = 0;
     }
     rgb_update();
-
 }
 
 uint32_t led_effect_color_wheel(uint8_t pos) {
     pos = 255 - pos;
     if (pos < 85) {
-        return ((uint32_t) (255 - pos * 3) << 16) | ((uint32_t) (0) << 8) |
+        return ((uint32_t)(255 - pos * 3) << 16) | ((uint32_t)(0) << 8) |
                (pos * 3);
     } else if (pos < 170) {
         pos -= 85;
-        return ((uint32_t) (0) << 16) | ((uint32_t) (pos * 3) << 8) |
+        return ((uint32_t)(0) << 16) | ((uint32_t)(pos * 3) << 8) |
                (255 - pos * 3);
     } else {
         pos -= 170;
-        return ((uint32_t) (pos * 3) << 16) | ((uint32_t) (255 - pos * 3) << 8) |
+        return ((uint32_t)(pos * 3) << 16) | ((uint32_t)(255 - pos * 3) << 8) |
                (0);
     }
 }
@@ -187,53 +158,4 @@ void rgb_fun_set_style(u8 style) {
 
 void rgb_fun_set_brightness(u8 brightness) {
     brightness_val = brightness;
-}
-
-
-static uint32_t _getCycleCount(void) __attribute__((always_inline));
-
-static inline uint32_t _getCycleCount(void) {
-    uint32_t ccount;
-    __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
-    return ccount;
-}
-
-#define CYCLES_800_T0H  (80000000 / 2500001) // 0.4us
-#define CYCLES_800_T1H  (80000000 / 1250001) // 0.8us
-#define CYCLES_800      (80000000 /  800001) // 1.25us per bit
-#define CYCLES_400_T0H  (80000000 / 2000000) // 0.5uS
-#define CYCLES_400_T1H  (80000000 /  833333) // 1.2us
-#define CYCLES_400      (80000000 /  400000) // 2.5us per bit
-
-IRAM_ATTR void espShow(
-        uint8_t pin, uint8_t *pixels, uint32_t numBytes) {
-    uint8_t *p, *end, pix, mask;
-    uint32_t t, time0, time1, period, c, startTime;
-    uint32_t pinMask;
-    pinMask = IO_MASK(pin);
-    p = pixels;
-    end = p + numBytes;
-    pix = *p++;
-    mask = 0x80;
-    startTime = 0;
-    time0 = CYCLES_800_T0H;
-    time1 = CYCLES_800_T1H;
-    period = CYCLES_800;
-
-    for (t = time0;; t = time0) {
-        if (pix & mask) t = time1;                             // Bit high duration
-        while (((c = _getCycleCount()) - startTime) < period); // Wait for bit start
-        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinMask);       // Set high
-
-        startTime = c;                                        // Save start time
-        while (((c = _getCycleCount()) - startTime) < t);      // Wait high duration
-        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinMask);       // Set low
-
-        if (!(mask >>= 1)) {                                   // Next bit/byte
-            if (p >= end) break;
-            pix = *p++;
-            mask = 0x80;
-        }
-    }
-    while ((_getCycleCount() - startTime) < period); // Wait for last bit
 }

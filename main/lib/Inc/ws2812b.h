@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-09 17:15:16
- * @LastEditTime: 2023-10-12 15:43:52
+ * @LastEditTime: 2023-10-20 16:23:49
  */
 #ifndef WS2812B_H_
 #define WS2812B_H_
@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define RGB_PIN 15
+// #define RGB_PIN 15
 #define RGB_LED_COUNT 2  // WS2812B 数量
 
 #define RGB_STYLE_1 0

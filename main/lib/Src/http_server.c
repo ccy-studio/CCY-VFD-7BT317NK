@@ -3,11 +3,13 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-18 16:44:26
- * @LastEditTime: 2023-10-19 17:33:17
+ * @LastEditTime: 2023-10-20 13:52:37
  */
 #include "cJSON.h"
 #include "my_http_server.h"
+#include "my_util.h"
 #include "ota_util.h"
+#include "rx8025.h"
 #include "smart_wifi.h"
 #include "store.h"
 
@@ -184,6 +186,25 @@ esp_err_t receive_ota_url_handle(httpd_req_t* req) {
 end:
     cJSON_Delete(root);
     return ESP_OK;
+}
+
+esp_err_t ntp_timing_handle(httpd_req_t* req) {
+    // 校时
+    esp_time* time = ntp_async();
+    if (time == NULL) {
+        httpd_resp_send_500(req);
+    } else {
+        // 时间校准成功 // 星期几 (0表示星期日, 1表示星期一, ...)
+        ESP_LOGI(APP_TAG, "NtcSetSuccess: %d:%d:%d %d:%d:%d Week:%d\n",
+                 time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
+                 time->tm_hour, time->tm_min, time->tm_sec, time->tm_wday);
+        // 设置到RX2025中
+        // rx8025_set_time((time->tm_year + 1900) % 100, time->tm_mon + 1,
+        //                 time->tm_mday, time->tm_wday, time->tm_hour,
+        //                 time->tm_min, time->tm_sec);
+        httpd_resp_send(req, RSP_OK, strlen(RSP_OK));
+    }
+    httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
     return ESP_OK;
 }
 
@@ -212,6 +233,11 @@ httpd_uri_t ota_update_t = {.uri = "/ota-update",
                             .handler = receive_ota_url_handle,
                             .user_ctx = NULL};
 
+httpd_uri_t ntp_set_t = {.uri = "/ntp-set",
+                         .method = HTTP_GET,
+                         .handler = ntp_timing_handle,
+                         .user_ctx = NULL};
+
 void http_start() {
     if (server != NULL) {
         httpd_stop(server);
@@ -227,6 +253,7 @@ void http_start() {
             httpd_register_uri_handler(server, &save_setting_t);
             httpd_register_uri_handler(server, &app_info_t);
             httpd_register_uri_handler(server, &ota_update_t);
+            httpd_register_uri_handler(server, &ntp_set_t);
         } else {
             ESP_LOGI(APP_TAG, "Error starting server!");
         }
