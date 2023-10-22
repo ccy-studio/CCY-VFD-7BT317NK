@@ -13,7 +13,7 @@
 #define BTN_MAX 5
 #define BTN_PRESS_LEVEL 0
 #define BTN_SCAN_MS 50
-#define BTN_LONG_PRESS_MS 2000
+#define BTN_LONG_PRESS_MS 1000
 #define BTN_LONG_DOUBLE_MS 500
 
 /**

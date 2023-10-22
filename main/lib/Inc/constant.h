@@ -82,8 +82,8 @@ typedef void (*fun_key_action)(u8 start);
 #define RGB_ANNO_FRAME 5
 
 /**
- * VFD时间刷新帧率
+ * 滚动文字最小刷新率/ms
  */
-#define VFD_TIME_FRAME 500
+#define CUSTOM_TEXT_MIN_FRAME 128
 
 #endif

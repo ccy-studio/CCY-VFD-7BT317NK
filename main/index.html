@@ -18,7 +18,7 @@
         <el-checkbox :label="4">周四</el-checkbox>
         <el-checkbox :label="5">周五</el-checkbox>
         <el-checkbox :label="6">周六</el-checkbox>
-        <el-checkbox :label="0">周天</el-checkbox></el-checkbox-group></el-form-item>
+        <el-checkbox :label="7">周天</el-checkbox></el-checkbox-group></el-form-item>
       <el-form-item label="闹钟"><el-switch v-model="form.alarmClock"></el-switch>
         <el-time-picker style="margin-left: 10px;" v-if="form.alarmClock" clearable value-format="HH:mm:ss" v-model="form.alarmClockTime" placeholder="任意时间点"></el-form-item><el-form-item label="闹钟生效条件" v-if="form.alarmClock"><el-checkbox-group v-model="form.alarmClockEnableDays"><el-checkbox :label="1">周一</el-checkbox>
         <el-checkbox :label="2">周二</el-checkbox>
@@ -26,14 +26,8 @@
         <el-checkbox :label="4">周四</el-checkbox>
         <el-checkbox :label="5">周五</el-checkbox>
         <el-checkbox :label="6">周六</el-checkbox>
-        <el-checkbox :label="0">周天</el-checkbox></el-checkbox-group></el-form-item>
-      <el-form-item label="倒计时"><span slot="label">倒计时<el-tag style="margin-left: 5px;" type="primary">{{form.countdown?"待执行":"未设定"}}</el-tag></span>
-        <el-switch v-model="form.countdown"></el-switch>
-        <el-time-picker style="margin-left: 10px;" v-if="form.countdown" value-format="HH:mm:ss" clearable :picker-options="{
-                                start: '00:00:01',
-                                step: '00:00:01',
-                                end: '12:59:59'
-                              }" v-model="form.countdownTime" placeholder="时分秒"></el-form-item><el-form-item label="系统信息"><span slot="label">系统信息 <span class="bq">[ 当前版本信息：{{currentAppInfo.appVersion}} ,Code:
+        <el-checkbox :label="7">周天</el-checkbox></el-checkbox-group></el-form-item>
+      <el-form-item label="系统信息"><span slot="label">系统信息 <span class="bq">[ 当前版本信息：{{currentAppInfo.appVersion}} ,Code:
 {{currentAppInfo.appVersionCode}} ]</span></span>
         <el-button @click="checkAppUpdate" type="primary" size="small">检查系统更新</el-button>
         <el-button :loading="ntpLoading" :disabled="ntpLoading" @click="ntpUpdate" type="primary" size="small">NTP网络校时</el-button></el-form-item>

@@ -14,13 +14,13 @@ void app_main() {
     ESP_ERROR_CHECK(nvs_flash_init())
     // 设置Uart 115200
     uart_set_baudrate(UART_NUM_0, 115200);
-    printf("RunStarting...\n");
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    tcpip_adapter_init();
     store_init();
     store_print_debug();
     fragment_init();
 
 //    wifi_connect();
-
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
         vTaskDelay(1);

@@ -16,18 +16,12 @@ static const uint32_t pins[1] = {PWM_PIN};
 void vfd_gui_init() {
     // 初始化GPIO
     ptInitGPIO();
-
     pwm_init(48, duties, 1, pins);
     pwm_set_phase(0, 180);
     pwm_start();
     // VFD Setting
     setDisplayMode(3);
     vfd_gui_clear();
-}
-
-void vfd_gui_start() {
-    pwm_set_duty(0, duties[0]);
-    pwm_start();
 }
 
 void vfd_gui_stop() {
@@ -37,6 +31,8 @@ void vfd_gui_stop() {
     mh2 = 0;
     pwm_set_duty(0, 0);
     pwm_start();
+    pwm_stop(0);
+    pwm_deinit();
 }
 
 void vfd_gui_clear() {
@@ -46,6 +42,7 @@ void vfd_gui_clear() {
     setModeWirteDisplayMode(0);               // command2
     sendDigAndData(0, clearBuf, 24);          // command3
     ptSetDisplayLight(lightOff, lightLevel);  // command4
+    current_icon_flag = 0;
 }
 
 void vfd_gui_set_one_text(size_t index, char oneChar) {
@@ -59,7 +56,7 @@ void vfd_gui_set_one_text(size_t index, char oneChar) {
     ptSetDisplayLight(lightOff, lightLevel);  // command4
 }
 
-void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
+void vfd_gui_set_icon(u32 buf) {
     if (current_icon_flag == buf) {
         // 过滤重复提交
         return;
@@ -71,10 +68,11 @@ void vfd_gui_set_icon(u32 buf, u8 is_save_state) {
     setModeWirteDisplayMode(0);               // command2
     sendDigAndData(0, arr, 3);                // command3
     ptSetDisplayLight(lightOff, lightLevel);  // command4
-    if (is_save_state) {
-        save_icon = buf;
-    }
     current_icon_flag = buf;
+}
+
+void vfd_set_save_icon(u32 icon) {
+    save_icon = icon;
 }
 
 u32 vfd_gui_get_save_icon(void) {
@@ -86,7 +84,7 @@ u8 vfd_gui_set_text(const char *string, const u8 colon) {
     static u8 data[24];
     memset(data, 0, sizeof(data));
     size_t index = 0;
-    for (size_t i = 0; i < str_len; i++) {
+    for (size_t i = 0; i < VFD_DIG_LEN; i++) {
         if (string[i] && string[i] != '\0') {
             u32 buf = gui_get_font(string[i]);
             data[index++] = (buf >> 16) & 0xFF;
@@ -169,7 +167,8 @@ void vfd_gui_set_long_text(const char *string,
     pageSize += loop_count > 1 ? (str_len + VFD_DIG_LEN) : 0;
     arr_len = pageSize * (VFD_DIG_LEN + 1);  //+1是没每一页末尾添加\0
     // 分配内存
-    char *buf = (char *) malloc(arr_len * sizeof(char));
+    size_t buf_mall_len = arr_len * sizeof(char) + 7;
+    char *buf = (char *) malloc(buf_mall_len);
     char *zreo_point = buf;
     char *second_point = NULL;
     if (buf == NULL) {
@@ -177,7 +176,8 @@ void vfd_gui_set_long_text(const char *string,
         return;
     }
     // 初始化数组
-    memset(buf, ' ', arr_len * sizeof(char));
+    memset(buf, ' ', buf_mall_len);
+    memset(buf + buf_mall_len - 7, 0, 7);
 
     // 正向渐出至消失 <-xxxxx
     for (size_t i = 0; i < str_len; i++) {
@@ -225,8 +225,10 @@ void vfd_gui_set_long_text(const char *string,
             second_point = NULL;
             return;
         }
-        if (vfd_gui_set_text(buf, 0)) {
-            delay_ms(delay_ms);
+        vfd_gui_set_text(buf, 0);
+        delay_ms(delay_ms);
+        if (i + 1 >= pageSize) {
+            break;
         }
         buf += VFD_DIG_LEN + 1;
     }
@@ -242,14 +244,12 @@ void vfd_gui_set_long_text(const char *string,
                     second_point = NULL;
                     return;
                 }
-                if (vfd_gui_set_text(buf, 0)) {
-                    delay_ms(delay_ms);
-                }
-                buf += VFD_DIG_LEN + 1;
+                vfd_gui_set_text(buf, 0);
+                delay_ms(delay_ms);
+                buf += (VFD_DIG_LEN + 1);
             }
         }
     }
-
     // 释放内存空间
     free(zreo_point);
     zreo_point = NULL;
@@ -272,7 +272,7 @@ void vfd_gui_anno_for_g1() {
         anno_frame = 0;
     }
     u32 anno = anno_arr[anno_frame];
-    vfd_gui_set_icon(anno | save_icon, 0);
+    vfd_gui_set_icon(anno | save_icon);
 }
 
 void vfd_gui_cancel_long_text() {

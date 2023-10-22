@@ -160,9 +160,7 @@ void wifi_set_ssid_pwd(char *ssid, char *pwd) {
 
 esp_err_t wifi_init() {
     if (s_wifi_event_group == NULL) {
-        tcpip_adapter_init();
         s_wifi_event_group = xEventGroupCreate();
-        ESP_ERROR_CHECK(esp_event_loop_create_default());
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_ERROR_CHECK(esp_wifi_init(&cfg));
         ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
@@ -202,6 +200,14 @@ void wifi_connect(void) {
 }
 
 void wifi_unconnect(void) {
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID,
+                                 &event_handler);
+    esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP,
+                                 &event_handler);
+    esp_event_handler_unregister(SC_EVENT, ESP_EVENT_ANY_ID,
+                                 &event_handler);
     if (s_wifi_event_group != NULL) {
         vEventGroupDelete(s_wifi_event_group);
         s_wifi_event_group = NULL;
@@ -212,7 +218,6 @@ void wifi_unconnect(void) {
         task_thread = NULL;
     }
     http_stop();
-    esp_wifi_disconnect();
     esp_wifi_deinit();
     current_wifi_state = WIFI_UNCONNECT;
     retry_count = 0;

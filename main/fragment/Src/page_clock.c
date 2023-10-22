@@ -42,7 +42,6 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
             }
             break;
         case BUTTON_PRESSED_LONG:
-            ESP_LOGI(APP_TAG, "BUTTON_PRESSED_LONG长按\n");
             if (btn_key == KEY3) {
                 // 进入设置页面
                 replace_page(FRAGMENT_PAGE_SETTING, NULL);
@@ -57,7 +56,11 @@ static void vfd_run_fun(void *params) {
     while (1) {
         if (CONTENT_CUSTOM == content_type) {
             vfd_gui_set_long_text(glob_setting_config.custom_long_text,
-                                  glob_setting_config.custom_long_text_frame, 2);
+                                  glob_setting_config.custom_long_text_frame < CUSTOM_TEXT_MIN_FRAME
+                                  ? CUSTOM_TEXT_MIN_FRAME
+                                  : glob_setting_config.custom_long_text_frame,
+                                  2);
+
         } else if (CONTENT_IP == content_type) {
             static char ip_buf[20];
             memset(ip_buf, 0, sizeof(ip_buf));
@@ -77,7 +80,7 @@ static void vfd_run_fun(void *params) {
                 time_colon_show = 1;
             }
             vfd_gui_set_text(vfd_content_buf, time_colon_show);
-            delay_ms(VFD_TIME_FRAME);
+            delay_ms(400);
         }
     }
 }
@@ -85,12 +88,16 @@ static void vfd_run_fun(void *params) {
 static void on_create(void *params) {}
 
 static void on_resume(void *params) {
-    xTaskCreate(vfd_run_fun, "VFD", 4096, NULL, 1, &vfd_thread);
+    if (vfd_thread == NULL) {
+        xTaskCreate(vfd_run_fun, "VFD", 6098, NULL, 50, &vfd_thread);
+    }
 }
 
 static void on_pause(void *params) {
-    vTaskDelete(vfd_thread);
-    vfd_thread = NULL;
+    if (vfd_thread != NULL) {
+        vTaskDelete(vfd_thread);
+        vfd_thread = NULL;
+    }
     vfd_gui_cancel_long_text();
     vfd_gui_clear();
 }

@@ -20,13 +20,16 @@ typedef struct {
 #define CONTENT_SET_RGB 1
 #define CONTENT_SET_G1 2
 #define CONTENT_SET_CLOCK 3
+#define CONTENT_CLEAN 4
 
 static u8 content_type = CONTENT_SET_WIFI;
 
-static setting_content content_arr[4] = {{"WIFI:", 0},
-                                         {"RGB:",  0},
-                                         {"G1:",   0},
-                                         {"TIME:", 0}};
+static setting_content content_arr[5] = {{"WIFI:",  0},
+                                         {"RGB:",   0},
+                                         {"G1:",    0},
+                                         {"TIME:",  0},
+                                         {"Del:", 0}
+};
 static char content_str[15];
 
 void set_content();
@@ -49,7 +52,7 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                 set_content();
             } else if (btn_key == KEY2) {
                 // 设置切换
-                if (content_type + 1 >= 4) {
+                if (content_type + 1 >= 5) {
                     content_type = 0;
                 } else {
                     content_type++;
@@ -78,9 +81,12 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                         store_save_setting();
                         break;
                     case CONTENT_SET_CLOCK:
-                        //                        replace_page(FRAGMENT_PAGE_CLOCK_SET,
-                        //                        NULL);
-                        rgb_clear();
+                        replace_page(FRAGMENT_PAGE_CLOCK_SET,
+                                     NULL);
+                        break;
+                    case CONTENT_CLEAN:
+                        //清空WIFI
+                        wifi_erase_config();
                         break;
                     default:
                         break;
@@ -90,7 +96,6 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
         case BUTTON_PRESSED_LONG:
             if (btn_key == KEY3) {
                 // 退出设置
-                printf("Exit\n");
                 replace_page(FRAGMENT_PAGE_CLOCK, NULL);
             }
             break;
@@ -103,7 +108,7 @@ static void on_create(void *params) {}
 
 static void on_resume(void *params) {
     // 首次进入更新设置
-    content_arr[CONTENT_SET_WIFI].open_state = 0;  // WIFI开关
+    content_arr[CONTENT_SET_WIFI].open_state = wifi_get_connect_state() == WIFI_CONNECTED ? 1 : 0;  // WIFI开关
     content_arr[CONTENT_SET_RGB].open_state = glob_setting_config.rgb_open;
     content_arr[CONTENT_SET_G1].open_state = glob_setting_config.anno_open;
     content_type = CONTENT_SET_WIFI;
@@ -141,11 +146,11 @@ void set_content() {
         //如果WIFI是配网或者是链接中就显示相应的状态
         snprintf(content_str, sizeof(content_str), "W:%s", (state == WIFI_CONFIGING ? "CONF" : "ING"));
     } else {
-        vfd_gui_clear();
         setting_content *obj = &content_arr[content_type];
         snprintf(content_str, sizeof(content_str), "%s%s", obj->title,
                  (obj->open_state ? STR_Y : STR_N));
     }
+    vfd_gui_clear();
     vfd_gui_set_text(content_str, 0);
 }
 

@@ -8,6 +8,9 @@
 #include "fragment.h"
 
 extern fragmen_obj fragment_page_arr[PAGE_COUNT];
+extern volatile bool power_state; //开关机状态
+extern void auto_power_handle(u8 state);
+
 
 void fragment_bind();
 
@@ -71,13 +74,12 @@ void fragment_init() {
     rgb_init();
     rx8025t_init(rx8025_key_handle);
     rx8025_reset();
-    fragment_service_init();
     // 按键初始化
     set_key_listener();
     button_init();
-    delay_ms(500);
     // 初始化VFD
     xEventGroupSetBits(fragment_event_handle, EVENT_VFD_OPEN);
+    fragment_service_init();
     for (size_t i = 0; i < PAGE_COUNT; i++) {
         fragmen_obj *obj = &fragment_page_arr[i];
         obj->on_create(NULL);
@@ -89,10 +91,13 @@ void fragment_init() {
 
 void fragment_loop() {
     if (xQueueReceive(btn_queue, &btn_receive, 0) == pdTRUE) {
-        ESP_LOGI(APP_TAG, "Key:%d action: %d\n", btn_receive.gpio,
-                 btn_receive.state);
-        if (active_obj != NULL) {
-            active_obj->btn_callback(btn_receive.gpio, btn_receive.state);
+        if (power_state) {
+            if (active_obj != NULL) {
+                active_obj->btn_callback(btn_receive.gpio, btn_receive.state);
+            }
+        } else {
+            //关机唤醒
+            auto_power_handle(1);
         }
     }
     if (replace_page_flag) {

@@ -16,6 +16,7 @@
 #include "store.h"
 #include "button.h"
 #include "smart_wifi.h"
+#include "service.h"
 
 /**
  * 页面ID常量

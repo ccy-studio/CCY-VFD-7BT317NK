@@ -96,7 +96,7 @@ void rgb_update(u8 brightness) {
         buf_arr[bi++] = rgb.b;
     }
     send_buf_spi();
-    delay_ms(350);
+    delay_us(100);
 }
 
 void rgb_clear() {
@@ -111,35 +111,38 @@ void rgb_clear() {
 }
 
 void rgb_fun_anno_update() {
-    static u8 c_val;
+    static int c_val;
+    static bool direction = false;
     static rgb_t rgb;
     static hsv_t hsv = {
             .h = 0,
             .s = 200,
             .v = 255
     };
-    u8 b_val = brightness_val;
     if (curr_style == RGB_STYLE_1) {
         rgb = hsv2rgb_rainbow(hsv);
+        hsv.h += 1;
         rgb_set_color(0, rgb.r, rgb.g, rgb.b);
+        rgb = hsv2rgb_rainbow(hsv);
         rgb_set_color(1, rgb.r, rgb.g, rgb.b);
-        hsv.h += 5;
+        hsv.h += 1;
     } else if (curr_style == RGB_STYLE_2) {
         rgb = rgb_heat_color(c_val);
         rgb_set_color(0, rgb.r, rgb.g, rgb.b);
         rgb_set_color(1, rgb.r, rgb.g, rgb.b);
-        c_val += 10;
-        b_val += 10;
-        if (b_val > brightness_val) {
-            b_val = 0;
-        }
     } else if (curr_style == RGB_STYLE_3) {
         rgb = hsv2rgb_spectrum(hsv);
         rgb_set_color(0, rgb.r, rgb.g, rgb.b);
         rgb_set_color(1, rgb.r, rgb.g, rgb.b);
-        hsv.h += 12;
+        hsv.h += 1;
     }
-    rgb_update(b_val);
+    if (c_val + 1 > 255) {
+        direction = true;
+    } else if (c_val - 1 < 0) {
+        direction = false;
+    }
+    c_val = direction ? c_val - 1 : c_val + 1;
+    rgb_update(brightness_val);
 }
 
 void rgb_fun_set_style(u8 style) {

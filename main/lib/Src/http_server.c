@@ -242,30 +242,31 @@ httpd_uri_t ntp_set_t = {.uri = "/ntp-set",
         .user_ctx = NULL};
 
 void http_start() {
-    if (server != NULL) {
-        httpd_stop(server);
-    }
-    if (wifi_get_connect_state() == WIFI_CONNECTED) {
-        httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-        ESP_LOGI(APP_TAG, "Starting server on port: '%d'", config.server_port);
-        if (httpd_start(&server, &config) == ESP_OK) {
-            // Set URI handlers
-            ESP_LOGI(APP_TAG, "Registering URI handlers");
-            httpd_register_uri_handler(server, &index_t);
-            httpd_register_uri_handler(server, &get_setting_t);
-            httpd_register_uri_handler(server, &save_setting_t);
-            httpd_register_uri_handler(server, &app_info_t);
-            httpd_register_uri_handler(server, &ota_update_t);
-            httpd_register_uri_handler(server, &ntp_set_t);
-        } else {
-            ESP_LOGI(APP_TAG, "Error starting server!");
+    if (server == NULL) {
+        if (wifi_get_connect_state() == WIFI_CONNECTED) {
+            httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+            ESP_LOGI(APP_TAG, "Starting server on port: '%d'", config.server_port);
+            if (httpd_start(&server, &config) == ESP_OK) {
+                // Set URI handlers
+                ESP_LOGI(APP_TAG, "Registering URI handlers");
+                httpd_register_uri_handler(server, &index_t);
+                httpd_register_uri_handler(server, &get_setting_t);
+                httpd_register_uri_handler(server, &save_setting_t);
+                httpd_register_uri_handler(server, &app_info_t);
+                httpd_register_uri_handler(server, &ota_update_t);
+                httpd_register_uri_handler(server, &ntp_set_t);
+            } else {
+                ESP_LOGI(APP_TAG, "Error starting server!");
+            }
         }
     }
+
 }
 
 void http_stop() {
     if (server != NULL) {
         httpd_stop(server);
+        server = NULL;
     }
 }
 

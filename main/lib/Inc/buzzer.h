@@ -7,6 +7,6 @@
 
 void buzzer_bind(fun_key_action fun);
 
-void buzzer_fast_play(u8 duration);
+void buzzer_fast_play(u32 duration);
 
 #endif

@@ -142,7 +142,7 @@ u8 i2c_read(u8 ack) {
     return receiveData;
 }
 
-void rx8025_read(u8 address, u8* buf, u8 len) {
+void rx8025_read(u8 address, u8 *buf, u8 len) {
     i2c_start();
     if (!i2c_write(RX8025T_ADDR_W)) {
         return;
@@ -160,7 +160,7 @@ void rx8025_read(u8 address, u8* buf, u8 len) {
     i2c_stop();
 }
 
-void rx8025_write(u8 address, u8* buf, u8 len) {
+void rx8025_write(u8 address, u8 *buf, u8 len) {
     i2c_start();
     if (!i2c_write(RX8025T_ADDR_W)) {
         return;
@@ -220,7 +220,7 @@ void rx8025_set_time(u8 year,
     key_func(0);
 }
 
-void rx8025_time_get(rx8025_timeinfo* timeinfo) {
+void rx8025_time_get(rx8025_timeinfo *timeinfo) {
     key_func(1);
     i2c_init();
     u8 buf[7];
@@ -228,14 +228,16 @@ void rx8025_time_get(rx8025_timeinfo* timeinfo) {
     timeinfo->sec = toDec(buf[0]);
     timeinfo->min = toDec(buf[1]);
     timeinfo->hour = toDec(buf[2]);
-    timeinfo->week = buf[3];
     timeinfo->day = toDec(buf[4]);
     timeinfo->month = toDec(buf[5]);
     timeinfo->year = toDec(buf[6]);
+    //蔡勒公式计算周
+    timeinfo->week =
+            (-35 + timeinfo->year + (timeinfo->year / 4) + (13 * (timeinfo->month + 1) / 5) + timeinfo->day - 1) % 7;
     key_func(0);
 }
 
-void formart_time(rx8025_timeinfo* timeinfo, char* buf, size_t buf_size) {
+void formart_time(rx8025_timeinfo *timeinfo, char *buf, size_t buf_size) {
     // 格式HH:mm:ss
     memset(buf, 0, buf_size);
 
@@ -261,7 +263,7 @@ void formart_time(rx8025_timeinfo* timeinfo, char* buf, size_t buf_size) {
 /**
  * 格式日期 YYMMdd
  */
-void formart_date(rx8025_timeinfo* timeinfo, char* buf, size_t buf_size) {
+void formart_date(rx8025_timeinfo *timeinfo, char *buf, size_t buf_size) {
     memset(buf, 0, sizeof(char) * buf_size);
 
     snprintf(buf + strlen(buf), buf_size, "%d", timeinfo->year);

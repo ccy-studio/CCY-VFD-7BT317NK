@@ -34,8 +34,6 @@
  */
 void vfd_gui_init();
 
-void vfd_gui_start();
-
 /**
  * 停止关闭显示、灯丝将停止驱动
  */
@@ -59,14 +57,19 @@ u8 vfd_gui_set_text(const char* string, const u8 colon);
 
 /**
  * 要点亮的ICON图标，宏定义传参
- * @param is_save_state 是否保存本次ICON图标到变量中
  */
-void vfd_gui_set_icon(u32 buf, u8 is_save_state);
+void vfd_gui_set_icon(u32 buf);
 
 /**
  * 获取保存的icon图标
  */
 u32 vfd_gui_get_save_icon(void);
+
+/**
+ * 设置保存的ICON图标
+ * @param icon
+ */
+void vfd_set_save_icon(u32 icon);
 
 /**
  * 背光开关
