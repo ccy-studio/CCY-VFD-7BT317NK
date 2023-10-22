@@ -6,12 +6,15 @@
  * @LastEditTime: 2023-10-10 16:44:20
  */
 #include "fragment.h"
+#include "smart_wifi.h"
 
 static u8 time_colon_show = 0;  // 时钟冒号显示状态
 
-#define CONTENT_DATE 0                  // 显示年份
-#define CONTENT_CUSTOM 1                // 显示滚动文字
-#define CONTENT_TIME 2                  // 显示时间
+#define CONTENT_TIME 0                  // 显示时间
+#define CONTENT_DATE 1                  // 显示年份
+#define CONTENT_CUSTOM 2                // 显示滚动文字
+#define CONTENT_IP 3                  // 显示IP
+#define  CONTENT_SIZE 4 //内容类型总数量
 static u8 content_type = CONTENT_TIME;  // 显示内容Flag
 
 static char vfd_content_buf[10];
@@ -31,7 +34,7 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
             } else if (btn_key == KEY3) {
                 // 切换显示状态
                 vfd_gui_cancel_long_text();
-                if (content_type + 1 >= 3) {
+                if (content_type + 1 >= CONTENT_SIZE) {
                     content_type = 0;
                 } else {
                     content_type++;
@@ -55,6 +58,16 @@ static void vfd_run_fun(void *params) {
         if (CONTENT_CUSTOM == content_type) {
             vfd_gui_set_long_text(glob_setting_config.custom_long_text,
                                   glob_setting_config.custom_long_text_frame, 2);
+        } else if (CONTENT_IP == content_type) {
+            static char ip_buf[20];
+            memset(ip_buf, 0, sizeof(ip_buf));
+            if (wifi_get_connect_state() == WIFI_CONNECTED) {
+                strcat(ip_buf, wifi_get_ip());
+            } else {
+                //UN connect
+                strcat(ip_buf, "WIFI UN-CONNECT");
+            }
+            vfd_gui_set_long_text(ip_buf, 150, 2);
         } else {
             if (CONTENT_TIME == content_type) {
                 formart_time(&timeinfo, vfd_content_buf, sizeof(vfd_content_buf));
@@ -72,7 +85,6 @@ static void vfd_run_fun(void *params) {
 static void on_create(void *params) {}
 
 static void on_resume(void *params) {
-    vfd_gui_set_icon(ICON_CLOCK, 1);
     xTaskCreate(vfd_run_fun, "VFD", 4096, NULL, 1, &vfd_thread);
 }
 

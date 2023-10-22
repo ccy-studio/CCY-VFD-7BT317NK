@@ -17,15 +17,14 @@ void app_main() {
     printf("RunStarting...\n");
     store_init();
     store_print_debug();
-    // fragment_init();
+    fragment_init();
 
-    wifi_connect();
+//    wifi_connect();
 
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
-        // vTaskDelay(1);
-        // fragment_loop();
-        delay_ms(1000);
-        // printf("wifi state:%d\n", wifi_get_connect_state());
+        vTaskDelay(1);
+        fragment_loop();
+//        delay_ms(1000);
     }
 }

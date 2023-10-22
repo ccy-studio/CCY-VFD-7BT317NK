@@ -26,7 +26,8 @@
 #define VFD_DIG_LEN 6
 
 // 灯丝PWM引脚
-#define PWM_PIN 13
+//#define PWM_PIN 13 //OLD
+#define PWM_PIN 15 //New
 
 /**
  * 初始化

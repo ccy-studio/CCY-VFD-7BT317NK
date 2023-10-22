@@ -15,7 +15,7 @@
 
 #define CONTENT_TYPE_HTML "Content-Type", "text/html; charset=utf-8"
 #define CONTENT_TYPE_JSON "Content-Type", "application/json"
-static const char* RSP_OK = "success";
+static const char *RSP_OK = "success";
 
 static httpd_handle_t server = NULL;
 
@@ -24,15 +24,18 @@ static httpd_handle_t server = NULL;
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[] asm("_binary_index_html_end");
 
-u8 cJSON_GetU8(cJSON* node, const char* key);
-void cJSON_GetStr(cJSON* node, const char* key, char* buf);
-void cJSON_GetU8Arr(cJSON* node, const char* key, u8* arr, u8 len);
-void ota_event_handle(ota_status_t state, void* params);
+u8 cJSON_GetU8(cJSON *node, const char *key);
+
+void cJSON_GetStr(cJSON *node, const char *key, char *buf);
+
+void cJSON_GetU8Arr(cJSON *node, const char *key, u8 *arr, u8 len);
+
+void ota_event_handle(ota_status_t state, void *params);
 
 // Method
-esp_err_t index_handle(httpd_req_t* req) {
+esp_err_t index_handle(httpd_req_t *req) {
     httpd_resp_set_hdr(req, CONTENT_TYPE_HTML);
-    char* str = (char*)malloc(index_html_end - index_html_start);
+    char *str = (char *) malloc(index_html_end - index_html_start);
     if (str == NULL) {
         ESP_LOGE(APP_TAG, "Mem Init Fail Err");
         httpd_resp_send_500(req);
@@ -44,12 +47,12 @@ esp_err_t index_handle(httpd_req_t* req) {
     return ESP_OK;
 }
 
-esp_err_t get_setting_handle(httpd_req_t* req) {
+esp_err_t get_setting_handle(httpd_req_t *req) {
     httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
     // cJson版本不低于v1.7.16否则报错
-    char* jsonStr = NULL;
-    cJSON* root = cJSON_CreateObject();
-    cJSON* array = NULL;
+    char *jsonStr = NULL;
+    cJSON *root = cJSON_CreateObject();
+    cJSON *array = NULL;
     if (root == NULL) {
         goto end;
     }
@@ -71,8 +74,8 @@ esp_err_t get_setting_handle(httpd_req_t* req) {
     array = cJSON_AddArrayToObject(root, "autoPowerEnableDays");
     for (size_t i = 0; i < 7; i++) {
         cJSON_AddItemToArray(
-            array,
-            cJSON_CreateNumber(glob_setting_config.auto_power_enable_days[i]));
+                array,
+                cJSON_CreateNumber(glob_setting_config.auto_power_enable_days[i]));
     }
 
     cJSON_AddBoolToObject(root, "alarmClock", glob_setting_config.alarm_clock);
@@ -81,8 +84,8 @@ esp_err_t get_setting_handle(httpd_req_t* req) {
     array = cJSON_AddArrayToObject(root, "alarmClockEnableDays");
     for (size_t i = 0; i < 7; i++) {
         cJSON_AddItemToArray(
-            array,
-            cJSON_CreateNumber(glob_setting_config.alarm_clock_enable_days[i]));
+                array,
+                cJSON_CreateNumber(glob_setting_config.alarm_clock_enable_days[i]));
     }
     cJSON_AddBoolToObject(root, "countdown", glob_setting_config.countdown);
     cJSON_AddStringToObject(root, "countdownTime",
@@ -93,12 +96,12 @@ esp_err_t get_setting_handle(httpd_req_t* req) {
         goto end;
     }
     httpd_resp_send(req, jsonStr, strlen(jsonStr));
-end:
+    end:
     cJSON_Delete(root);
     return ESP_OK;
 }
 
-esp_err_t save_setting_handle(httpd_req_t* req) {
+esp_err_t save_setting_handle(httpd_req_t *req) {
     httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
     int ret, remaining = req->content_len;
     char buf[remaining + 1];
@@ -106,7 +109,7 @@ esp_err_t save_setting_handle(httpd_req_t* req) {
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
-    cJSON* root = cJSON_Parse(buf);
+    cJSON *root = cJSON_Parse(buf);
     if (root == NULL) {
         httpd_resp_send_500(req);
         goto end;
@@ -119,7 +122,7 @@ esp_err_t save_setting_handle(httpd_req_t* req) {
 
     cJSON_GetStr(root, "customLongText", glob_setting_config.custom_long_text);
     glob_setting_config.custom_long_text_frame =
-        cJSON_GetObjectItemCaseSensitive(root, "customLongTextFrame")->valueint;
+            cJSON_GetObjectItemCaseSensitive(root, "customLongTextFrame")->valueint;
     glob_setting_config.auto_power = cJSON_GetU8(root, "autoPower");
     cJSON_GetStr(root, "autoPowerOpenTime",
                  glob_setting_config.auto_power_open_time);
@@ -136,17 +139,17 @@ esp_err_t save_setting_handle(httpd_req_t* req) {
     glob_setting_config.countdown = cJSON_GetU8(root, "countdown");
     cJSON_GetStr(root, "countdownTime", glob_setting_config.countdown_time);
     httpd_resp_send(req, RSP_OK, strlen(RSP_OK));
-end:
+    end:
     cJSON_Delete(root);
     store_save_setting();
     return ESP_OK;
 }
 
-esp_err_t get_app_info_handle(httpd_req_t* req) {
+esp_err_t get_app_info_handle(httpd_req_t *req) {
     httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
     // cJson版本不低于v1.7.16否则报错
-    char* jsonStr = NULL;
-    cJSON* root = cJSON_CreateObject();
+    char *jsonStr = NULL;
+    cJSON *root = cJSON_CreateObject();
     if (root == NULL) {
         goto end;
     }
@@ -159,12 +162,12 @@ esp_err_t get_app_info_handle(httpd_req_t* req) {
         goto end;
     }
     httpd_resp_send(req, jsonStr, strlen(jsonStr));
-end:
+    end:
     cJSON_Delete(root);
     return ESP_OK;
 }
 
-esp_err_t receive_ota_url_handle(httpd_req_t* req) {
+esp_err_t receive_ota_url_handle(httpd_req_t *req) {
     httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
     int ret, remaining = req->content_len;
     char buf[remaining + 1];
@@ -172,7 +175,7 @@ esp_err_t receive_ota_url_handle(httpd_req_t* req) {
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
-    cJSON* root = cJSON_Parse(buf);
+    cJSON *root = cJSON_Parse(buf);
     if (root == NULL) {
         httpd_resp_send_500(req);
         goto end;
@@ -183,14 +186,14 @@ esp_err_t receive_ota_url_handle(httpd_req_t* req) {
     ESP_LOGI(APP_TAG, "OTA Url:%s", url_buf);
     ota_update(url_buf, ota_event_handle);
     httpd_resp_send(req, RSP_OK, strlen(RSP_OK));
-end:
+    end:
     cJSON_Delete(root);
     return ESP_OK;
 }
 
-esp_err_t ntp_timing_handle(httpd_req_t* req) {
+esp_err_t ntp_timing_handle(httpd_req_t *req) {
     // 校时
-    esp_time* time = ntp_async();
+    esp_time *time = ntp_async();
     if (time == NULL) {
         httpd_resp_send_500(req);
     } else {
@@ -199,9 +202,9 @@ esp_err_t ntp_timing_handle(httpd_req_t* req) {
                  time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
                  time->tm_hour, time->tm_min, time->tm_sec, time->tm_wday);
         // 设置到RX2025中
-        // rx8025_set_time((time->tm_year + 1900) % 100, time->tm_mon + 1,
-        //                 time->tm_mday, time->tm_wday, time->tm_hour,
-        //                 time->tm_min, time->tm_sec);
+        rx8025_set_time((time->tm_year + 1900) % 100, time->tm_mon + 1,
+                        time->tm_mday, time->tm_wday, time->tm_hour,
+                        time->tm_min, time->tm_sec);
         httpd_resp_send(req, RSP_OK, strlen(RSP_OK));
     }
     httpd_resp_set_hdr(req, CONTENT_TYPE_JSON);
@@ -210,33 +213,33 @@ esp_err_t ntp_timing_handle(httpd_req_t* req) {
 
 // URL
 httpd_uri_t index_t = {.uri = "/",
-                       .method = HTTP_GET,
-                       .handler = index_handle,
-                       .user_ctx = NULL};
+        .method = HTTP_GET,
+        .handler = index_handle,
+        .user_ctx = NULL};
 httpd_uri_t get_setting_t = {.uri = "/get-setting",
-                             .method = HTTP_GET,
-                             .handler = get_setting_handle,
-                             .user_ctx = NULL};
+        .method = HTTP_GET,
+        .handler = get_setting_handle,
+        .user_ctx = NULL};
 
 httpd_uri_t save_setting_t = {.uri = "/save-setting",
-                              .method = HTTP_POST,
-                              .handler = save_setting_handle,
-                              .user_ctx = NULL};
+        .method = HTTP_POST,
+        .handler = save_setting_handle,
+        .user_ctx = NULL};
 
 httpd_uri_t app_info_t = {.uri = "/appinfo",
-                          .method = HTTP_GET,
-                          .handler = get_app_info_handle,
-                          .user_ctx = NULL};
+        .method = HTTP_GET,
+        .handler = get_app_info_handle,
+        .user_ctx = NULL};
 
 httpd_uri_t ota_update_t = {.uri = "/ota-update",
-                            .method = HTTP_POST,
-                            .handler = receive_ota_url_handle,
-                            .user_ctx = NULL};
+        .method = HTTP_POST,
+        .handler = receive_ota_url_handle,
+        .user_ctx = NULL};
 
 httpd_uri_t ntp_set_t = {.uri = "/ntp-set",
-                         .method = HTTP_GET,
-                         .handler = ntp_timing_handle,
-                         .user_ctx = NULL};
+        .method = HTTP_GET,
+        .handler = ntp_timing_handle,
+        .user_ctx = NULL};
 
 void http_start() {
     if (server != NULL) {
@@ -259,20 +262,21 @@ void http_start() {
         }
     }
 }
+
 void http_stop() {
     if (server != NULL) {
         httpd_stop(server);
     }
 }
 
-u8 cJSON_GetU8(cJSON* node, const char* key) {
-    cJSON* cj = cJSON_GetObjectItemCaseSensitive(node, key);
+u8 cJSON_GetU8(cJSON *node, const char *key) {
+    cJSON *cj = cJSON_GetObjectItemCaseSensitive(node, key);
     return cj->valueint;
 }
 
-void cJSON_GetStr(cJSON* node, const char* key, char* buf) {
-    char* str =
-        cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(node, key));
+void cJSON_GetStr(cJSON *node, const char *key, char *buf) {
+    char *str =
+            cJSON_GetStringValue(cJSON_GetObjectItemCaseSensitive(node, key));
     if (str == NULL) {
         return;
     }
@@ -280,8 +284,8 @@ void cJSON_GetStr(cJSON* node, const char* key, char* buf) {
     memcpy(buf, str, strlen(str));
 }
 
-void cJSON_GetU8Arr(cJSON* node, const char* key, u8* arr, u8 len) {
-    cJSON* cj = cJSON_GetObjectItemCaseSensitive(node, key);
+void cJSON_GetU8Arr(cJSON *node, const char *key, u8 *arr, u8 len) {
+    cJSON *cj = cJSON_GetObjectItemCaseSensitive(node, key);
     int strLen = cJSON_GetArraySize(cj);
     memset(arr, 0, sizeof(u8) * len);
     for (size_t i = 0; i < strLen; i++) {
@@ -289,4 +293,4 @@ void cJSON_GetU8Arr(cJSON* node, const char* key, u8* arr, u8 len) {
     }
 }
 
-void ota_event_handle(ota_status_t state, void* params) {}
+void ota_event_handle(ota_status_t state, void *params) {}

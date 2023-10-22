@@ -16,17 +16,18 @@ static EventGroupHandle_t s_wifi_event_group = NULL;
 static TaskHandle_t task_thread = NULL;
 static const int CONNECTED_BIT = BIT0;
 static const int ESPTOUCH_DONE_BIT = BIT1;
-static wifi_status_t current_wifi_state;
-static u8 retry_count;  // 重试次数
-static char ip[50];
+static volatile wifi_status_t current_wifi_state;
+static volatile u8 retry_count;  // 重试次数
+static volatile char ip[50];
 
-static void smartconfig_task(void* parm);
-void wifi_set_ssid_pwd(char* ssid, char* pwd);
+static void smartconfig_task(void *parm);
 
-static void event_handler(void* arg,
+void wifi_set_ssid_pwd(char *ssid, char *pwd);
+
+static void event_handler(void *arg,
                           esp_event_base_t event_base,
                           int32_t event_id,
-                          void* event_data) {
+                          void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         if (current_wifi_state == WIFI_CONFIGING) {
             wifi_start_smart_server();
@@ -48,7 +49,7 @@ static void event_handler(void* arg,
         esp_wifi_connect();
         xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT);
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+        ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
         memset(ip, 0, sizeof(ip));
         memcpy(ip, ip4addr_ntoa(&event->ip_info.ip), sizeof(ip));
         ESP_LOGI(APP_TAG, "Get ip:[%s]\n", ip);
@@ -64,8 +65,8 @@ static void event_handler(void* arg,
     } else if (event_base == SC_EVENT && event_id == SC_EVENT_GOT_SSID_PSWD) {
         ESP_LOGI(APP_TAG, "Got SSID and password");
 
-        smartconfig_event_got_ssid_pswd_t* evt =
-            (smartconfig_event_got_ssid_pswd_t*)event_data;
+        smartconfig_event_got_ssid_pswd_t *evt =
+                (smartconfig_event_got_ssid_pswd_t *) event_data;
         wifi_config_t wifi_config;
         uint8_t ssid[33] = {0};
         uint8_t password[65] = {0};
@@ -88,20 +89,21 @@ static void event_handler(void* arg,
         ESP_LOGI(APP_TAG, "PASSWORD:%s", password);
         if (evt->type == SC_TYPE_ESPTOUCH_V2) {
             ESP_ERROR_CHECK(
-                esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)));
+                    esp_smartconfig_get_rvd_data(rvd_data, sizeof(rvd_data)));
             ESP_LOGI(APP_TAG, "RVD_DATA:%s", rvd_data);
         }
         // 保存到NVS
-        wifi_set_ssid_pwd((char*)&ssid, (char*)&password);
+        wifi_set_ssid_pwd((char *) &ssid, (char *) &password);
         ESP_ERROR_CHECK(esp_wifi_disconnect());
         ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_connect());
+        current_wifi_state = WIFI_CONNECTING;
     } else if (event_base == SC_EVENT && event_id == SC_EVENT_SEND_ACK_DONE) {
         xEventGroupSetBits(s_wifi_event_group, ESPTOUCH_DONE_BIT);
     }
 }
 
-static void smartconfig_task(void* parm) {
+static void smartconfig_task(void *parm) {
     EventBits_t uxBits;
     ESP_ERROR_CHECK(esp_smartconfig_set_type(SC_TYPE_ESPTOUCH_V2));
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
@@ -125,7 +127,7 @@ static void smartconfig_task(void* parm) {
     }
 }
 
-void wifi_get_ssid_pwd(char* ssid, char* pwd) {
+void wifi_get_ssid_pwd(char *ssid, char *pwd) {
     nvs_handle_t handle;
     if (nvs_open(NVS_WIFI_T, NVS_READONLY, &handle) != ESP_OK) {
         return;
@@ -145,7 +147,7 @@ void wifi_get_ssid_pwd(char* ssid, char* pwd) {
     ESP_LOGI(APP_TAG, "NVS Get ssid:%s pwd:%s", ssid, pwd);
 }
 
-void wifi_set_ssid_pwd(char* ssid, char* pwd) {
+void wifi_set_ssid_pwd(char *ssid, char *pwd) {
     nvs_handle_t handle;
     if (nvs_open(NVS_WIFI_T, NVS_READWRITE, &handle) != ESP_OK) {
         return;
@@ -167,7 +169,7 @@ esp_err_t wifi_init() {
         ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,
                                                    &event_handler, NULL));
         ESP_ERROR_CHECK(esp_event_handler_register(
-            IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+                IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
         ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID,
                                                    &event_handler, NULL));
 
@@ -176,9 +178,12 @@ esp_err_t wifi_init() {
     }
     return ESP_FAIL;
 }
+
 void wifi_connect(void) {
     wifi_unconnect();
     char ssid[32], pwd[64];
+    memset(ssid, 0, sizeof(ssid));
+    memset(pwd, 0, sizeof(pwd));
     wifi_get_ssid_pwd(ssid, pwd);
     wifi_init();
     if (strlen(ssid) == 0) {
@@ -195,6 +200,7 @@ void wifi_connect(void) {
     }
     ESP_ERROR_CHECK(esp_wifi_start());
 }
+
 void wifi_unconnect(void) {
     if (s_wifi_event_group != NULL) {
         vEventGroupDelete(s_wifi_event_group);
@@ -212,9 +218,11 @@ void wifi_unconnect(void) {
     retry_count = 0;
     memset(ip, 0, sizeof(ip));
 }
+
 wifi_status_t wifi_get_connect_state(void) {
     return current_wifi_state;
 }
+
 void wifi_erase_config(void) {
     nvs_handle_t handle;
     if (nvs_open(NVS_WIFI_T, NVS_READWRITE, &handle) != ESP_OK) {
@@ -223,16 +231,19 @@ void wifi_erase_config(void) {
     nvs_erase_all(handle);
     nvs_close(handle);
 }
+
 void wifi_start_smart_server(void) {
     current_wifi_state = WIFI_CONFIGING;
-    if (task_thread == NULL) {
-        xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT);
-        xEventGroupClearBits(s_wifi_event_group, ESPTOUCH_DONE_BIT);
-        xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 3,
-                    &task_thread);
+    if (task_thread != NULL) {
+        vTaskDelete(task_thread);
+        esp_smartconfig_stop();
     }
+    xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT);
+    xEventGroupClearBits(s_wifi_event_group, ESPTOUCH_DONE_BIT);
+    xTaskCreate(smartconfig_task, "smartconfig_task", 4096, NULL, 3,
+                &task_thread);
 }
 
-char* wifi_get_ip() {
-    return &ip;
+char *wifi_get_ip() {
+    return &ip[0];
 }

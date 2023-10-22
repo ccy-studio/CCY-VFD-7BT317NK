@@ -20,7 +20,7 @@ void store_init() {
     glob_setting_config.anno_open = 1;
     glob_setting_config.rgb_open = 1;
     glob_setting_config.rgb_style = 0;
-    glob_setting_config.rgb_brightness = 1;
+    glob_setting_config.rgb_brightness = 255;
     memcpy(glob_setting_config.custom_long_text, "Hello VFD", 9);
     glob_setting_config.custom_long_text_frame = 255;
     store_read_setting();

@@ -79,7 +79,7 @@ typedef void (*fun_key_action)(u8 start);
 /**
  * RGB帧率
  */
-#define RGB_ANNO_FRAME 10
+#define RGB_ANNO_FRAME 5
 
 /**
  * VFD时间刷新帧率

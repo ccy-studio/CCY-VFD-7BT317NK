@@ -63,9 +63,9 @@
                         </el-form-item>
                         <el-form-item label="RGB灯效样式" v-if="form.rgbOpen">
                             <el-radio-group v-model="form.rgbStyle">
-                                <el-radio :label="1">渐变呼吸</el-radio>
-                                <el-radio :label="2">彩虹渐变</el-radio>
-                                <el-radio :label="3">恐怖阴森</el-radio>
+                                <el-radio :label="0">彩虹(Rainbow)</el-radio>
+                                <el-radio :label="1">动态热度(Heat)</el-radio>
+                                <el-radio :label="2">动态光谱(Spectrum)</el-radio>
                             </el-radio-group>
                         </el-form-item>
 

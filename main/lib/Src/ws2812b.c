@@ -8,7 +8,6 @@
 #include "ws2812b.h"
 #include "color.h"
 #include "driver/spi.h"
-#include "rgb.h"
 
 typedef struct {
     u8 r;
@@ -18,7 +17,7 @@ typedef struct {
 
 volatile rgb_cache cache_arr[RGB_LED_COUNT];
 static u8 buf_arr[RGB_LED_COUNT * 3];
-static volatile u8 brightness_val, curr_style;
+static volatile u8 brightness_val = 255, curr_style;
 
 void rgb_init() {
     spi_config_t spi_config;
@@ -54,7 +53,7 @@ void rgb_set_color(u8 index, u8 r, u8 g, u8 b) {
     cache_arr[index].b = b;
 }
 
-static send_buf_spi() {
+static void send_buf_spi() {
     u32 len = RGB_LED_COUNT * 3;
     u32 blen = len * 8;
     u8 buf[blen];
@@ -70,14 +69,17 @@ static send_buf_spi() {
             data <<= 1;
         }
     }
-    uint32_t* spi_buf = (uint32_t*)buf;
+    uint32_t *spi_buf = (uint32_t *) buf;
     spi_trans_t trans = {0};
     trans.mosi = spi_buf;
     trans.bits.mosi = blen * 8;
     spi_trans(HSPI_HOST, &trans);
 }
 
-void rgb_update() {
+void rgb_update(u8 brightness) {
+    if (brightness == 0) {
+        brightness = brightness_val;
+    }
     memset(buf_arr, 0, sizeof(buf_arr));
     u32 bi = 0;
     rgb_t rgb;
@@ -86,14 +88,15 @@ void rgb_update() {
         rgb.b = cache.b;
         rgb.r = cache.r;
         rgb.g = cache.g;
-        rgb.r = (uint8_t)(((uint16_t)rgb.r * brightness_val) / 255);
-        rgb.g = (uint8_t)(((uint16_t)rgb.g * brightness_val) / 255);
-        rgb.b = (uint8_t)(((uint16_t)rgb.b * brightness_val) / 255);
+        rgb.r = (uint8_t) (((uint16_t) rgb.r * brightness) / 255);
+        rgb.g = (uint8_t) (((uint16_t) rgb.g * brightness) / 255);
+        rgb.b = (uint8_t) (((uint16_t) rgb.b * brightness) / 255);
         buf_arr[bi++] = rgb.g;
         buf_arr[bi++] = rgb.r;
         buf_arr[bi++] = rgb.b;
     }
     send_buf_spi();
+    delay_ms(350);
 }
 
 void rgb_clear() {
@@ -104,52 +107,39 @@ void rgb_clear() {
         cache.g = 0;
         cache.b = 0;
     }
-    rgb_update();
-}
-
-uint32_t led_effect_color_wheel(uint8_t pos) {
-    pos = 255 - pos;
-    if (pos < 85) {
-        return ((uint32_t)(255 - pos * 3) << 16) | ((uint32_t)(0) << 8) |
-               (pos * 3);
-    } else if (pos < 170) {
-        pos -= 85;
-        return ((uint32_t)(0) << 16) | ((uint32_t)(pos * 3) << 8) |
-               (255 - pos * 3);
-    } else {
-        pos -= 170;
-        return ((uint32_t)(pos * 3) << 16) | ((uint32_t)(255 - pos * 3) << 8) |
-               (0);
-    }
-}
-
-rgb_t rainbow(u8 pos) {
-    uint32_t next_color;
-    rgb_t next_pixel;
-
-    next_color = led_effect_color_wheel(pos);
-    next_pixel.r = (next_color >> 16) & 0xff;
-    next_pixel.g = (next_color >> 8) & 0xff;
-    next_pixel.b = (next_color);
-    return next_pixel;
+    rgb_update(0);
 }
 
 void rgb_fun_anno_update() {
     static u8 c_val;
     static rgb_t rgb;
-    static u8 old_br = 0;
+    static hsv_t hsv = {
+            .h = 0,
+            .s = 200,
+            .v = 255
+    };
+    u8 b_val = brightness_val;
     if (curr_style == RGB_STYLE_1) {
-        rgb = rainbow((c_val += 5));
+        rgb = hsv2rgb_rainbow(hsv);
         rgb_set_color(0, rgb.r, rgb.g, rgb.b);
-        rgb = rainbow((c_val += 5));
         rgb_set_color(1, rgb.r, rgb.g, rgb.b);
+        hsv.h += 5;
     } else if (curr_style == RGB_STYLE_2) {
-        rgb = rgb_heat_color((c_val += 10));
+        rgb = rgb_heat_color(c_val);
         rgb_set_color(0, rgb.r, rgb.g, rgb.b);
         rgb_set_color(1, rgb.r, rgb.g, rgb.b);
+        c_val += 10;
+        b_val += 10;
+        if (b_val > brightness_val) {
+            b_val = 0;
+        }
     } else if (curr_style == RGB_STYLE_3) {
+        rgb = hsv2rgb_spectrum(hsv);
+        rgb_set_color(0, rgb.r, rgb.g, rgb.b);
+        rgb_set_color(1, rgb.r, rgb.g, rgb.b);
+        hsv.h += 12;
     }
-    rgb_update();
+    rgb_update(b_val);
 }
 
 void rgb_fun_set_style(u8 style) {

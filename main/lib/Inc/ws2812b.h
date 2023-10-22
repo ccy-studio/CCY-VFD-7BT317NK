@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-// #define RGB_PIN 15
+//#define RGB_PIN 13 //new13 old15
 #define RGB_LED_COUNT 2  // WS2812B 数量
 
 #define RGB_STYLE_1 0
@@ -25,12 +25,18 @@ void rgb_init();
 
 void rgb_set_color(u8 index, u8 r, u8 g, u8 b);
 
-void rgb_update();
+/**
+ * 刷新数据显示到WS2812中
+ * @param brightness
+ */
+void rgb_update(u8 brightness);
 
 void rgb_clear();
 
 void rgb_fun_anno_update();
+
 void rgb_fun_set_style(u8 style);
+
 void rgb_fun_set_brightness(u8 brightness);
 
 #ifdef __cplusplus

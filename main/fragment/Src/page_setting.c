@@ -24,14 +24,19 @@ typedef struct {
 static u8 content_type = CONTENT_SET_WIFI;
 
 static setting_content content_arr[4] = {{"WIFI:", 0},
-                                         {"RGB:", 0},
-                                         {"G1:", 0},
+                                         {"RGB:",  0},
+                                         {"G1:",   0},
                                          {"TIME:", 0}};
 static char content_str[15];
 
 void set_content();
 
 static void click_callback(u8 btn_key, button_state_t btn_action) {
+    if (wifi_get_connect_state() == WIFI_CONFIGING ||
+        wifi_get_connect_state() == WIFI_CONNECTING) {
+        //如果WIFI是配网或者是链接中就忽略按键
+        return;
+    }
     switch (btn_action) {
         case BUTTON_RELEASED:
             if (btn_key == KEY1) {
@@ -51,12 +56,11 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
                 }
                 set_content();
             } else if (btn_key == KEY3) {
-                setting_content* obj = &content_arr[content_type];
+                setting_content *obj = &content_arr[content_type];
                 obj->open_state = !obj->open_state;
                 set_content();
                 switch (content_type) {
                     case CONTENT_SET_WIFI:
-                        printf("WIFI\n");
                         if (obj->open_state &&
                             wifi_get_connect_state() == WIFI_UNCONNECT) {
                             wifi_connect();
@@ -95,9 +99,9 @@ static void click_callback(u8 btn_key, button_state_t btn_action) {
     }
 }
 
-static void on_create(void* params) {}
+static void on_create(void *params) {}
 
-static void on_resume(void* params) {
+static void on_resume(void *params) {
     // 首次进入更新设置
     content_arr[CONTENT_SET_WIFI].open_state = 0;  // WIFI开关
     content_arr[CONTENT_SET_RGB].open_state = glob_setting_config.rgb_open;
@@ -106,25 +110,49 @@ static void on_resume(void* params) {
     set_content();
 }
 
-static void on_pause(void* params) {
+static void on_pause(void *params) {
     vfd_gui_cancel_long_text();
     vfd_gui_clear();
 }
 
-static void on_loop(void* params) {}
+static void on_loop(void *params) {
+    static u8 is_update = 0;
+    wifi_status_t state = wifi_get_connect_state();
+    if (state == WIFI_CONFIGING ||
+        state == WIFI_CONNECTING) {
+        set_content();
+        delay_ms(300);
+        is_update = 1;
+    } else if (is_update) {
+        is_update = 2;
+    }
+    if (is_update == 2) {
+        //主动刷新一次获取最新的状态
+        set_content();
+        is_update = 0;
+    }
+}
 
 void set_content() {
     memset(content_str, 0, sizeof(content_str));
-    setting_content* obj = &content_arr[content_type];
-    snprintf(content_str, sizeof(content_str), "%s%s", obj->title,
-             (obj->open_state ? STR_Y : STR_N));
+    wifi_status_t state = wifi_get_connect_state();
+    if (state == WIFI_CONFIGING ||
+        state == WIFI_CONNECTING) {
+        //如果WIFI是配网或者是链接中就显示相应的状态
+        snprintf(content_str, sizeof(content_str), "W:%s", (state == WIFI_CONFIGING ? "CONF" : "ING"));
+    } else {
+        vfd_gui_clear();
+        setting_content *obj = &content_arr[content_type];
+        snprintf(content_str, sizeof(content_str), "%s%s", obj->title,
+                 (obj->open_state ? STR_Y : STR_N));
+    }
     vfd_gui_set_text(content_str, 0);
 }
 
 const fragmen_obj page_setting = {.fid = FRAGMENT_PAGE_SETTING,
-                                  .active = 0,
-                                  .btn_callback = click_callback,
-                                  .on_create = on_create,
-                                  .on_resume = on_resume,
-                                  .on_pause = on_pause,
-                                  .on_loop = on_loop};
+        .active = 0,
+        .btn_callback = click_callback,
+        .on_create = on_create,
+        .on_resume = on_resume,
+        .on_pause = on_pause,
+        .on_loop = on_loop};
