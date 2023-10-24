@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-10-08 09:56:12
- * @LastEditTime: 2023-10-20 10:48:13
+ * @LastEditTime: 2023-10-24 17:22:56
  */
 #include "fragment.h"
 #include "driver/uart.h"
@@ -20,11 +20,11 @@ void app_main() {
     store_print_debug();
     fragment_init();
 
-//    wifi_connect();
+    // wifi_connect();
     ESP_LOGI(APP_TAG, "Run Success!\n");
     while (1) {
         vTaskDelay(1);
         fragment_loop();
-//        delay_ms(1000);
+        // delay_ms(1000);
     }
 }

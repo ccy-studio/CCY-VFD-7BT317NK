@@ -12,6 +12,9 @@
 #include "esp_netif.h"
 #include <esp_http_server.h>
 
+#define CONTENT_TYPE_HTML "Content-Type", "text/html; charset=utf-8"
+#define CONTENT_TYPE_JSON "Content-Type", "application/json"
+
 void http_start();
 void http_stop();
 

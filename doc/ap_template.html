@@ -1,0 +1,367 @@
+<!--
+ * @Description: 
+ * @Blog: saisaiwa.com
+ * @Author: ccy
+ * @Date: 2023-08-18 11:14:49
+ * @LastEditTime: 2023-10-24 16:09:59
+ * 压缩工具： https://www.lddgo.net/string/html-beautify-minify
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIFI配网</title>
+    <style>
+        html {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            background-color: #eee;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        section {
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #fff;
+            text-align: center;
+            display: flex;
+            height: 60px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            -ms-flex-negative: 0;
+            flex-shrink: 0;
+        }
+
+        .bq {
+            font-size: 12px;
+            color: #909399;
+        }
+
+        .header span {
+            flex: 1;
+            align-self: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .tip {
+            color: #E6A23C;
+            font-size: 13px;
+        }
+
+        footer {
+            padding: 10px;
+        }
+
+        .main {
+            padding: 10px;
+        }
+
+        .card {
+            margin-top: 10px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+            border-radius: 4px;
+            border: 1px solid #EBEEF5;
+            background-color: #FFF;
+            overflow: hidden;
+            color: #303133;
+            -webkit-transition: .3s;
+            transition: .3s;
+            -webkit-box-direction: normal;
+            padding: 20px;
+            color: #303133;
+        }
+
+        .input_inner {
+            -webkit-appearance: none;
+            background-color: #FFF;
+            background-image: none;
+            border-radius: 4px;
+            border: 1px solid #DCDFE6;
+            box-sizing: border-box;
+            color: #606266;
+            display: inline-block;
+            height: 40px;
+            line-height: 40px;
+            outline: 0;
+            padding: 0 15px;
+            -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+            transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+            width: 100%;
+            font-size: inherit;
+            font-size: 14px;
+        }
+
+        .input_lable {
+            float: none;
+            display: inline-block;
+            text-align: left;
+            padding: 0 0 10px;
+            text-align: right;
+            vertical-align: middle;
+            float: left;
+            font-size: 14px;
+            color: #606266;
+            line-height: 40px;
+            padding: 0 12px 0 0;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            cursor: default;
+
+        }
+
+        .input_item::after {
+            clear: both;
+            display: table;
+            content: "";
+        }
+
+        .input_item {
+            margin-bottom: 22px;
+        }
+
+        .primary_btn {
+            padding: 9px 15px;
+            font-size: 12px;
+            border-radius: 3px;
+            color: #FFF !important;
+            background-color: #409EFF !important;
+            border-color: #409EFF;
+            display: inline-block;
+            line-height: 1;
+            white-space: nowrap;
+            cursor: pointer;
+            background: #FFF;
+            border: 1px solid #DCDFE6;
+            color: #606266;
+            -webkit-appearance: none;
+            text-align: center;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            outline: 0;
+            margin: 0;
+            -webkit-transition: .1s;
+            transition: .1s;
+            font-weight: 500;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            -webkit-user-select: none;
+        }
+
+        .ap_list {
+            padding: 10px 5px;
+            background-color: #fff;
+        }
+
+        .ap_list table {
+            width: 100%;
+        }
+
+        .ap_list thead {
+            color: #909399;
+            font-weight: 500;
+        }
+
+        .ap_list tbody {
+            display: table-row-group;
+            vertical-align: middle;
+            border-color: inherit;
+            border-collapse: separate;
+        }
+
+        .ap_list td {
+            transition: background-color .25s ease;
+            border-bottom: 1px solid #ebeef5;
+            padding: 12px 0;
+            min-width: 0;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            position: relative;
+            text-align: center;
+        }
+
+        .t_button {
+            padding: 3px 10px;
+            border-radius: 3px;
+            color: #fff !important;
+            background-color: #67C23A !important;
+            border-color: #fff;
+        }
+
+        .scan_b {
+            margin-top: 10px;
+            margin-left: 5px;
+            border-radius: 20px !important;
+        }
+
+        .load {
+            display: flow;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <section>
+            <header class="header">
+                <span>WIFI配网</span>
+            </header>
+            <div class="main">
+                <div class="ap_list">
+                    <table cellspacing="0" cellpadding="0" border="0">
+                        <thead>
+                            <tr>
+                                <th>WIFI名称</th>
+                                <th>信号强度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table_data">
+                            <tr>
+                                <td rowspan="1" colspan="1">Saisawa</td>
+                                <td rowspan="1" colspan="1">123</td>
+                                <td rowspan="1" colspan="1">
+                                    <button class="t_button" onclick="onClickForSetWifi('Saisawa')"
+                                        type="button">选择</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="scanWifi()" class="primary_btn scan_b">
+                        扫描WIFI
+                    </button>
+                </div>
+                <div class="card">
+                    <form action="/wifi-connect" method="get">
+                        <div class="input_item">
+                            <label class="input_lable">WIFI名称</label>
+                            <input minlength="1" maxlength="25" id="in_ssid" name="ssid" class="input_inner" type="text"
+                                autocomplete="off" placeholder="输入WIFI名称" />
+                        </div>
+                        <div class="input_item">
+                            <label class="input_lable">WIFI密码</label>
+                            <input maxlength="25" id="in_pwd" name="password" class="input_inner" type="text"
+                                autocomplete="off" placeholder="输入WIFI密码" />
+                        </div>
+                        <button type="submit" class="primary_btn">
+                            保存并连接
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+            <footer>
+                <p class="bq">版权所有 © saisaiwa 2023~2025。保留所有权利。<br>
+                    除非获得 saisaiwa 的明确许可，否则不得以任何形式复制、分发或修改本网页内容。<br>
+                    免责声明：本网页的内容仅供参考和教育目的。作者不承担由于使用本网页内容而导致的任何直接或间接损失或损害。使用者需自行承担风险。<br>
+                    所有第三方商标、标识和名称仅用于说明目的，并可能是其各自所有者的财产。<br>
+                    如有任何疑问，请联系:yustart@foxmail.com</p>
+            </footer>
+        </section>
+    </div>
+    <script>
+
+        var isLoadWifi = false;
+
+
+        function onClickForSetWifi(ssid) {
+            document.getElementById("in_ssid").value = ssid;
+            document.getElementById("in_pwd").value = "";
+            // 滚动到页面底部
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function scanWifi() {
+            if (isLoadWifi) {
+                return;
+            }
+            isLoadWifi = true;
+            var tableData = document.getElementById("table_data");
+            tableData.innerHTML = "<span class='load'>Loading...</span>";
+            // 创建一个 XMLHttpRequest 对象
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/scan-ap', true);
+            xhr.onreadystatechange = function () {
+                isLoadWifi = false;
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    // 清空表格
+                    tableData.innerHTML = '';
+
+                    // 首先按照RSSI值降序排序
+                    data.sort((a, b) => b.rssi - a.rssi);
+
+                    // 创建一个新数组用于去重
+                    const uniqueData = [];
+                    const seen = new Set();
+
+                    for (const item of data) {
+                        if (!seen.has(item.ssid)) {
+                            uniqueData.push(item);
+                            seen.add(item.ssid);
+                        }
+                    }
+
+                    // 根据RSSI值给出信号的中文说明
+                    const signalDescriptions = {
+                        "信号强": -50, // 信号强
+                        "信号较好": -60,      // 信号较好
+                        "信号一般": -70,      // 信号一般
+                        "信号较弱": -80,      // 信号较弱
+                        "信号很弱": -90  // 信号很弱
+                    };
+
+                    const result = uniqueData.map(item => {
+                        let description = "Unknown";
+                        for (const [signal, value] of Object.entries(signalDescriptions)) {
+                            if (item.rssi >= value) {
+                                description = signal;
+                                break;
+                            }
+                        }
+                        return { ssid: item.ssid, rssi: item.rssi, description };
+                    });
+
+                    result.forEach(function (item) {
+                        var row = document.createElement('tr');
+                        var ssidCell = document.createElement('td');
+                        ssidCell.textContent = item.ssid;
+                        var rssiCell = document.createElement('td');
+                        rssiCell.textContent = item.description;
+                        var buttonCell = document.createElement('td');
+                        var button = document.createElement('button');
+                        button.textContent = '选择';
+                        button.className = 't_button';
+                        button.onclick = function () {
+                            onClickForSetWifi(item.ssid);
+                        };
+                        buttonCell.appendChild(button);
+
+                        row.appendChild(ssidCell);
+                        row.appendChild(rssiCell);
+                        row.appendChild(buttonCell);
+
+                        tableData.appendChild(row);
+                    });
+                }
+            };
+            xhr.send();
+        }
+
+        // 在页面加载完成后自动执行scan方法
+        window.onload = function () {
+            scanWifi();
+        };
+    </script>
+</body>
+
+</html>

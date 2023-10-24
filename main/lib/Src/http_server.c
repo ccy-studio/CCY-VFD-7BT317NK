@@ -13,8 +13,6 @@
 #include "smart_wifi.h"
 #include "store.h"
 
-#define CONTENT_TYPE_HTML "Content-Type", "text/html; charset=utf-8"
-#define CONTENT_TYPE_JSON "Content-Type", "application/json"
 static const char *RSP_OK = "success";
 
 static httpd_handle_t server = NULL;
@@ -96,6 +94,7 @@ esp_err_t get_setting_handle(httpd_req_t *req) {
         goto end;
     }
     httpd_resp_send(req, jsonStr, strlen(jsonStr));
+    free(jsonStr);
     end:
     cJSON_Delete(root);
     return ESP_OK;
@@ -162,6 +161,7 @@ esp_err_t get_app_info_handle(httpd_req_t *req) {
         goto end;
     }
     httpd_resp_send(req, jsonStr, strlen(jsonStr));
+    free(jsonStr);
     end:
     cJSON_Delete(root);
     return ESP_OK;
