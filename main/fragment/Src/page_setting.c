@@ -24,13 +24,13 @@ typedef struct {
 
 static u8 content_type = CONTENT_SET_WIFI;
 
-static setting_content content_arr[5] = {{"WIFI:",  0},
-                                         {"RGB:",   0},
-                                         {"G1:",    0},
-                                         {"TIME:",  0},
-                                         {"Del:", 0}
+static setting_content content_arr[5] = {{"WIFI:", 0},
+                                         {"RGB:",  0},
+                                         {"G1:",   0},
+                                         {"TIME:", 0},
+                                         {"Del:",  0}
 };
-static char content_str[15];
+static char content_str[VFD_DIG_LEN + 1];
 
 void set_content();
 
@@ -144,13 +144,13 @@ void set_content() {
     if (state == WIFI_CONFIGING ||
         state == WIFI_CONNECTING) {
         //如果WIFI是配网或者是链接中就显示相应的状态
-        snprintf(content_str, sizeof(content_str), "W:%s", (state == WIFI_CONFIGING ? "CONF" : "ING"));
+        strcpy(content_str, "W:");
+        strcat(content_str, (state == WIFI_CONFIGING ? "CONF" : "ING."));
     } else {
         setting_content *obj = &content_arr[content_type];
-        snprintf(content_str, sizeof(content_str), "%s%s", obj->title,
-                 (obj->open_state ? STR_Y : STR_N));
+        strcpy(content_str, obj->title);
+        strcat(content_str, (obj->open_state ? STR_Y : STR_N));
     }
-    vfd_gui_clear();
     vfd_gui_set_text(content_str, 0);
 }
 

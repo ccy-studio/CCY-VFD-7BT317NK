@@ -106,6 +106,7 @@ void fragment_loop() {
                 fragmen_obj *obj = &fragment_page_arr[i];
                 if (obj->fid == replace_page_flag) {
                     active_obj->on_pause(NULL);
+                    delay_ms(5);
                     active_obj->active = 0;
                     active_obj = obj;
                     active_obj->on_resume(replace_page_param);

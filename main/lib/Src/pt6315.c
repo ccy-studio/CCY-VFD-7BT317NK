@@ -1,4 +1,8 @@
 #include "pt6315.h"
+#include "freertos/semphr.h"
+
+// 创建互斥锁
+static SemaphoreHandle_t xSemaphore = NULL;
 
 void ptInitGPIO(void) {
     gpio_config_t gpio;
@@ -8,6 +12,12 @@ void ptInitGPIO(void) {
     gpio.intr_type = GPIO_INTR_DISABLE;
     gpio.pin_bit_mask = IO_MASK(CLK_PIN) | IO_MASK(DIN_PIN) | IO_MASK(STB_PIN);
     gpio_config(&gpio);
+    if (xSemaphore != NULL) {
+        xSemaphoreGive(xSemaphore);
+        vSemaphoreDelete(xSemaphore);
+        xSemaphore = NULL;
+    }
+    xSemaphore = xSemaphoreCreateMutex();
 }
 
 void writeData(uint8_t data) {
@@ -100,16 +110,23 @@ void ptSetDisplayLight(uint8_t onOff, uint8_t brightnessVal) {
 }
 
 void sendDigAndData(uint8_t dig, const uint8_t *data, size_t len) {
-    STB_1;
-    delay_us(10);
-    STB_0;
-    delay_us(10);
-    writeData(0xc0 | dig);
-    delay_us(10);
-    // 写入数据
-    for (size_t i = 0; i < len; i++) {
-        writeData(data[i]);
+    if (xSemaphore == NULL) {
+        return;
     }
-    delay_us(10);
-    STB_1;
+    if (xSemaphoreTake(xSemaphore, 0) == pdTRUE) {
+        STB_1;
+        delay_us(10);
+        STB_0;
+        delay_us(10);
+        writeData(0xc0 | dig);
+        delay_us(10);
+        // 写入数据
+        for (size_t i = 0; i < len; i++) {
+            writeData(data[i]);
+        }
+        delay_us(10);
+        STB_1;
+        //释放资源占用
+        xSemaphoreGive(xSemaphore);
+    }
 }

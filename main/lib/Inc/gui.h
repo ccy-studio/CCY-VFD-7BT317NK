@@ -52,6 +52,7 @@ void vfd_gui_set_one_text(size_t index, char oneChar);
 /**
  * 显示一串文字，从0位开始。
  * (自动清空覆盖显示，方便每次不用调用clear防止闪屏出现)
+ * @param colon 是否显示冒号
  */
 u8 vfd_gui_set_text(const char* string, const u8 colon);
 
@@ -80,16 +81,6 @@ void vfd_gui_set_bck(u8 onOff);
  * 设置亮度等级 1~7
  */
 void vfd_gui_set_blk_level(size_t level);
-
-/**
- * 第一位冒号，参数bool类型
- */
-void vfd_gui_set_maohao1(u8 open);
-
-/**
- * 第二位冒号，参数bool类型
- */
-void vfd_gui_set_maohao2(u8 open);
 
 /**
  * 循环滚动展示所有文字,可显示任意长字符内容

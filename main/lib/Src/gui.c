@@ -4,14 +4,14 @@
 u8 lightOff = 1;    // 背光开关
 u8 lightLevel = 5;  // 亮度级别
 
-u8 mh1, mh2;  // 冒号1、2
-
 // 记录当前设置单独ICON的值
 u32 current_icon_flag = 0;
 u32 save_icon = 0;
 static u8 long_cancel_flag = 0;
 static uint32_t duties[1] = {4};
 static const uint32_t pins[1] = {PWM_PIN};
+
+static u8 send_buf[24] = {0};
 
 void vfd_gui_init() {
     // 初始化GPIO
@@ -21,14 +21,14 @@ void vfd_gui_init() {
     pwm_start();
     // VFD Setting
     setDisplayMode(3);
+    setModeWirteDisplayMode(0);
+    vfd_gui_set_blk_level(lightLevel);
     vfd_gui_clear();
 }
 
 void vfd_gui_stop() {
     vfd_gui_clear();
     current_icon_flag = 0;
-    mh1 = 0;
-    mh2 = 0;
     pwm_set_duty(0, 0);
     pwm_start();
     pwm_stop(0);
@@ -36,24 +36,18 @@ void vfd_gui_stop() {
 }
 
 void vfd_gui_clear() {
-    setModeWirteDisplayMode(0);  // command2
-    u8 clearBuf[24];
-    memset(clearBuf, 0x00, sizeof(clearBuf));
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(0, clearBuf, 24);          // command3
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    memset(send_buf, 0x00, sizeof(send_buf));
+    sendDigAndData(0, send_buf, 24);
     current_icon_flag = 0;
 }
 
 void vfd_gui_set_one_text(size_t index, char oneChar) {
-    setModeWirteDisplayMode(0);  // command2
     u32 buf = gui_get_font(oneChar);
     uint8_t arr[3];
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;
     arr[2] = buf & 0xFF;
-    sendDigAndData(index * 3, arr, 3);        // command3
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    sendDigAndData(index * 3, arr, 3);
 }
 
 void vfd_gui_set_icon(u32 buf) {
@@ -65,9 +59,7 @@ void vfd_gui_set_icon(u32 buf) {
     arr[0] = (buf >> 16) & 0xFF;
     arr[1] = (buf >> 8) & 0xFF;
     arr[2] = buf & 0xFF;
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(0, arr, 3);                // command3
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    sendDigAndData(0, arr, 3);
     current_icon_flag = buf;
 }
 
@@ -81,40 +73,28 @@ u32 vfd_gui_get_save_icon(void) {
 
 u8 vfd_gui_set_text(const char *string, const u8 colon) {
     size_t str_len = strlen(string);
-    static u8 data[24];
-    memset(data, 0, sizeof(data));
+    memset(send_buf, 0x00, sizeof(send_buf));
     size_t index = 0;
-    for (size_t i = 0; i < VFD_DIG_LEN; i++) {
+    size_t len = str_len > VFD_DIG_LEN ? VFD_DIG_LEN : str_len;
+    for (size_t i = 0; i < len; i++) {
         if (string[i] && string[i] != '\0') {
             u32 buf = gui_get_font(string[i]);
-            data[index++] = (buf >> 16) & 0xFF;
-            data[index++] = (buf >> 8) & 0xFF;
-            data[index++] = buf & 0xFF;
+            send_buf[index++] = (buf >> 16) & 0xFF;
+            send_buf[index++] = (buf >> 8) & 0xFF;
+            send_buf[index++] = buf & 0xFF;
         }
     }
-    // 分号的处理
-    if (str_len >= 2) {
-        mh1 = data[5];
-    } else {
-        mh1 = 0;
-    }
-    if (str_len >= 4) {
-        mh2 = data[11];
-    } else {
-        mh2 = 0;
-    }
     if (colon) {
-        data[5] |= 0x10;
-        data[11] |= 0x10;
+        send_buf[5] |= 0x10;
+        send_buf[11] |= 0x10;
     }
-    setModeWirteDisplayMode(0);               // command2
-    sendDigAndData(3, data, 24);              // command3
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
+    sendDigAndData(3, send_buf, 24);
     return 1;
 }
 
 void vfd_gui_set_bck(u8 onOff) {
     lightOff = onOff;
+    ptSetDisplayLight(lightOff, lightLevel);
 }
 
 /**
@@ -122,22 +102,7 @@ void vfd_gui_set_bck(u8 onOff) {
  */
 void vfd_gui_set_blk_level(size_t level) {
     lightLevel = level;
-}
-
-static void vfd_set_maohao(u8 address, u8 buf) {
-    setModeWirteDisplayMode(1);               // command2
-    sendDigAndData(address, &buf, 1);         // command3
-    ptSetDisplayLight(lightOff, lightLevel);  // command4
-}
-
-void vfd_gui_set_maohao1(u8 open) {
-    u8 command = open ? mh1 | 0x10 : mh1;
-    vfd_set_maohao(0x08, command);
-}
-
-void vfd_gui_set_maohao2(u8 open) {
-    u8 command = open ? mh2 | 0x10 : mh2;
-    vfd_set_maohao(0x0E, command);
+    ptSetDisplayLight(lightOff, lightLevel);
 }
 
 /**
